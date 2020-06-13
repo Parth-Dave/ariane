@@ -31,3 +31,5 @@ stdout/
 work-dpi/
 tb/riscv-isa-sim/
 work-*/*
+hello.c
+hello.elf
