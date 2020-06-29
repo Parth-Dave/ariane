@@ -264,6 +264,7 @@ package riscv;
     localparam OpcodeC2Swsp         = 3'b110;
     localparam OpcodeC2Sdsp         = 3'b111;
 
+  
     // ----------------------
     // Virtual Memory
     // ----------------------

@@ -55,6 +55,11 @@ module issue_stage #(
 
     output logic                                     csr_valid_o,
 
+    input  logic                                     rocc_ready_i,
+    output logic                                     rocc_valid_o,
+    output logic [6:0]                               rocc_funct7_o,
+    output logic [4:0]                               rocc_rd_o,
+
     // write back port
     input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0] trans_id_i,
     input bp_resolve_t                               resolved_branch_i,
@@ -176,6 +181,7 @@ module issue_stage #(
         .branch_valid_o      ( branch_valid_o                  ),
         .csr_valid_o         ( csr_valid_o                     ),
         .mult_valid_o        ( mult_valid_o                    ),
+        //.rocc_valid_o        ( rocc_valid_o                    ),
         .*
     );
 

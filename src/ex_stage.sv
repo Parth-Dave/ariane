@@ -76,6 +76,15 @@ module ex_stage #(
     output logic [63:0]                            fpu_result_o,
     output logic                                   fpu_valid_o,
     output exception_t                             fpu_exception_o,
+
+    //RoCC
+    input  logic                                   rocc_valid_i,
+    input  logic [6:0]                             rocc_funct7_i,
+    input  logic [4:0]                             rocc_rd_i,
+    output logic                                   rocc_ready_o,
+    output logic[TRANS_ID_BITS-1:0]                rocc_trans_id_o,
+    output logic [63:0]                            rocc_result_o,
+    output logic                                   rocc_valid_o,
     // Memory Management
     input  logic                                   enable_translation_i,
     input  logic                                   en_ld_st_translation_i,
@@ -248,6 +257,35 @@ module ex_stage #(
             assign fpu_result_o    = '0;
             assign fpu_valid_o     = '0;
             assign fpu_exception_o = '0;
+        end
+    endgenerate
+
+    // ---------------
+    // RoCC
+    // ---------------
+    generate
+        if (ACC_PRESENT) begin :RoCC_gen
+            fu_data_t rocc_data;
+            assign rocc_data  = rocc_valid_i ? fu_data_i  : '0;
+
+            RoCC rocc_i (
+                .clk_i,
+                .rst_ni,
+                .flush_i,
+                .rocc_valid_i,
+                .rocc_ready_o,
+                .fu_data_i ( rocc_data ),
+                .rocc_trans_id_o,
+                .rocc_valid_o,
+                .rocc_funct7_i, 
+                .rocc_rd_i,
+                .result_o ( rocc_result_o )
+            );
+        end else begin : no_RoCC_gen
+            assign rocc_ready_o     = '0;
+            assign rocc_trans_id_o  = '0;
+            assign rocc_result_o    = '0;
+            assign rocc_valid_o     = '0;
         end
     endgenerate
 

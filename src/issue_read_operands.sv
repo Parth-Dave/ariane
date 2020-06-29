@@ -61,6 +61,11 @@ module issue_read_operands #(
     output logic [2:0]                             fpu_rm_o,         // FP rm field from instr.
     // CSR
     output logic                                   csr_valid_o,      // Output is valid
+    //ACC
+    input logic                                    rocc_ready_i,
+    output logic                                   rocc_valid_o,
+    output logic [6:0]                             rocc_funct7_o,
+    output logic [4:0]                             rocc_rd_o,
     // commit port
     input  logic [NR_COMMIT_PORTS-1:0][4:0]        waddr_i,
     input  logic [NR_COMMIT_PORTS-1:0][63:0]       wdata_i,
@@ -88,6 +93,9 @@ module issue_read_operands #(
     logic          lsu_valid_q;
     logic          csr_valid_q;
     logic       branch_valid_q;
+    logic         rocc_valid_q;
+    logic [6:0]  rocc_funct7_q;
+    logic [4:0]      rocc_rd_q;
 
     logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
     fu_op operator_n, operator_q; // operation to perform
@@ -115,6 +123,9 @@ module issue_read_operands #(
     assign fpu_valid_o         = fpu_valid_q;
     assign fpu_fmt_o           = fpu_fmt_q;
     assign fpu_rm_o            = fpu_rm_q;
+    assign rocc_funct7_o       = rocc_funct7_q
+    assign rocc_valid_o        = rocc_valid_q;
+    assign rocc_rd_o           = rocc_rd_q;
     // ---------------
     // Issue Stage
     // ---------------
@@ -131,6 +142,8 @@ module issue_read_operands #(
                 fu_busy = ~fpu_ready_i;
             LOAD, STORE:
                 fu_busy = ~lsu_ready_i;
+            ACC:
+                fu_busy=~rocc_ready_i;
             default:
                 fu_busy = 1'b0;
         endcase
@@ -186,6 +199,7 @@ module issue_read_operands #(
                 stall = 1'b1;
             end
         end
+        if (is_rs1_rocc(issue_instr_i.op))
     end
 
     // Forwarding/Output MUX
@@ -200,11 +214,11 @@ module issue_read_operands #(
         fu_n       = issue_instr_i.fu;
         operator_n = issue_instr_i.op;
         // or should we forward
-        if (forward_rs1) begin
+        if (forward_rs1 && ~is_rs1_rocc(issue_instr_i.op)) begin
             operand_a_n  = rs1_i;
         end
 
-        if (forward_rs2) begin
+        if (forward_rs2 && ~is_rs2_rocc(issue_instr_i.op)) begin
             operand_b_n  = rs2_i;
         end
 
@@ -241,6 +255,8 @@ module issue_read_operands #(
         fpu_rm_q       <= 3'b0;
         csr_valid_q    <= 1'b0;
         branch_valid_q <= 1'b0;
+        rocc_valid_q   <= 1'b0;
+        rocc_funct7_q  <= 7'b0;
       end else begin
         alu_valid_q    <= 1'b0;
         lsu_valid_q    <= 1'b0;
@@ -250,6 +266,9 @@ module issue_read_operands #(
         fpu_rm_q       <= 3'b0;
         csr_valid_q    <= 1'b0;
         branch_valid_q <= 1'b0;
+        rocc_valid_q   <= 1'b0;
+        rocc_funct7_q  <= 7'b0;
+        rocc_rd_q      <= 5'b0;
         // Exception pass through:
         // If an exception has occurred simply pass it through
         // we do not want to issue this instruction
@@ -275,6 +294,11 @@ module issue_read_operands #(
                     lsu_valid_q    <= 1'b1;
                 CSR:
                     csr_valid_q    <= 1'b1;
+                ACC:begin
+                    rocc_valid_q   <= 1'b1;
+                    rocc_funct7_q  <= orig.instr.rtype.funct7;
+                    rocc_rd_q      <= issue_instr_i.rd;
+                end
                 default:;
             endcase
         end
@@ -287,6 +311,9 @@ module issue_read_operands #(
             fpu_valid_q    <= 1'b0;
             csr_valid_q    <= 1'b0;
             branch_valid_q <= 1'b0;
+            rocc_valid_q   <= 1'b0;
+            rocc_funct7_q  <= 7'b0;
+            rocc_rd_q      <= 5'b0;
         end
       end
     end
@@ -305,16 +332,16 @@ module issue_read_operands #(
                 // -----------------------------------------
                 // WAW - Write After Write Dependency Check
                 // -----------------------------------------
-                // no other instruction has the same destination register -> issue the instruction
-                if (is_rd_fpr(issue_instr_i.op) ? (rd_clobber_fpr_i[issue_instr_i.rd] == NONE)
-                                                : (rd_clobber_gpr_i[issue_instr_i.rd] == NONE)) begin
+                // no other instruction has the same destination register -> issue the instruction or if rd is internal to accelerator
+                if ((is_rd_fpr(issue_instr_i.op) ? (rd_clobber_fpr_i[issue_instr_i.rd] == NONE)
+                                                : (rd_clobber_gpr_i[issue_instr_i.rd] == NONE)) || is_rd_rocc (issue_instr_i.op)) begin
                     issue_ack_o = 1'b1;
                 end
-                // or check that the target destination register will be written in this cycle by the
+                // or check that the target destination register will be written in this cycle by the or if rd is internal to accelerator
                 // commit stage
                 for (int unsigned i = 0; i < NR_COMMIT_PORTS; i++)
-                    if (is_rd_fpr(issue_instr_i.op) ? (we_fpr_i[i] && waddr_i[i] == issue_instr_i.rd)
-                                                    : (we_gpr_i[i] && waddr_i[i] == issue_instr_i.rd)) begin
+                    if ((is_rd_fpr(issue_instr_i.op) ? (we_fpr_i[i] && waddr_i[i] == issue_instr_i.rd)
+                                                    : (we_gpr_i[i] && waddr_i[i] == issue_instr_i.rd)) || is_rd_rocc (issue_instr_i.op) ) begin
                         issue_ack_o = 1'b1;
                     end
             end
@@ -405,8 +432,8 @@ module issue_read_operands #(
         end
     endgenerate
 
-    assign operand_a_regfile = is_rs1_fpr(issue_instr_i.op) ? fprdata[0] : rdata[0];
-    assign operand_b_regfile = is_rs2_fpr(issue_instr_i.op) ? fprdata[1] : rdata[1];
+    assign operand_a_regfile = is_rs1_fpr(issue_instr_i.op) ? fprdata[0] : (is_rs1_rocc(issue_instr_i.op) ? issue_instr_i.rs1[4:0] : rdata[0]);
+    assign operand_b_regfile = is_rs2_fpr(issue_instr_i.op) ? fprdata[1] : (is_rs2_rocc(issue_instr_i.op) ? issue_instr_i.rs2[4:0] : rdata[1]);
     assign operand_c_regfile = fprdata[2];
 
     // ----------------------

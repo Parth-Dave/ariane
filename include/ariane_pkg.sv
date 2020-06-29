@@ -152,7 +152,7 @@ package ariane_pkg;
     // allocate more space for the commit buffer to be on the save side, this needs to be a power of two
     localparam int unsigned DEPTH_COMMIT = 8;
 `endif
-
+    localparam bit ACC_PRESENT=1'b1; // Use this bit to specify if RoCC interface is used
 
 `ifdef PITON_ARIANE
     // Floating-point extensions configuration
@@ -355,7 +355,8 @@ package ariane_pkg;
         MULT,      // 5
         CSR,       // 6
         FPU,       // 7
-        FPU_VEC    // 8
+        FPU_VEC,   // 8
+        ACC        //9
     } fu_t;
 
     localparam EXC_OFF_RST      = 8'h80;
@@ -432,41 +433,44 @@ package ariane_pkg;
     // EX Stage
     // ---------------
     typedef enum logic [6:0] { // basic ALU op
-                               ADD, SUB, ADDW, SUBW,
+                               ADD, SUB, ADDW, SUBW, 
                                // logic operations
-                               XORL, ORL, ANDL,
+                               XORL, ORL, ANDL,      
                                // shifts
-                               SRA, SRL, SLL, SRLW, SLLW, SRAW,
+                               SRA, SRL, SLL, SRLW, SLLW, SRAW, 
                                // comparisons
-                               LTS, LTU, GES, GEU, EQ, NE,
-                               // jumps
+                               LTS, LTU, GES, GEU, EQ, NE, 
+                               // jumps   
                                JALR, BRANCH,
                                // set lower than operations
-                               SLTS, SLTU,
+                               SLTS, SLTU, 
                                // CSR functions
-                               MRET, SRET, DRET, ECALL, WFI, FENCE, FENCE_I, SFENCE_VMA, CSR_WRITE, CSR_READ, CSR_SET, CSR_CLEAR,
+                               MRET, SRET, DRET, ECALL, WFI, FENCE, FENCE_I, SFENCE_VMA, CSR_WRITE, CSR_READ, CSR_SET, CSR_CLEAR, 
                                // LSU functions
-                               LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU,
+                               LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU, 
                                // Atomic Memory Operations
                                AMO_LRW, AMO_LRD, AMO_SCW, AMO_SCD,
-                               AMO_SWAPW, AMO_ADDW, AMO_ANDW, AMO_ORW, AMO_XORW, AMO_MAXW, AMO_MAXWU, AMO_MINW, AMO_MINWU,
-                               AMO_SWAPD, AMO_ADDD, AMO_ANDD, AMO_ORD, AMO_XORD, AMO_MAXD, AMO_MAXDU, AMO_MIND, AMO_MINDU,
+                               AMO_SWAPW, AMO_ADDW, AMO_ANDW, AMO_ORW, AMO_XORW, AMO_MAXW, AMO_MAXWU, AMO_MINW, AMO_MINWU, 
+                               AMO_SWAPD, AMO_ADDD, AMO_ANDD, AMO_ORD, AMO_XORD, AMO_MAXD, AMO_MAXDU, AMO_MIND, AMO_MINDU, 
                                // Multiplications
-                               MUL, MULH, MULHU, MULHSU, MULW,
+                               MUL, MULH, MULHU, MULHSU, MULW, 
                                // Divisions
-                               DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW,
+                               DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW, 
                                // Floating-Point Load and Store Instructions
-                               FLD, FLW, FLH, FLB, FSD, FSW, FSH, FSB,
+                               FLD, FLW, FLH, FLB, FSD, FSW, FSH, FSB, 
                                // Floating-Point Computational Instructions
-                               FADD, FSUB, FMUL, FDIV, FMIN_MAX, FSQRT, FMADD, FMSUB, FNMSUB, FNMADD,
+                               FADD, FSUB, FMUL, FDIV, FMIN_MAX, FSQRT, FMADD, FMSUB, FNMSUB, FNMADD, 
                                // Floating-Point Conversion and Move Instructions
-                               FCVT_F2I, FCVT_I2F, FCVT_F2F, FSGNJ, FMV_F2X, FMV_X2F,
+                               FCVT_F2I, FCVT_I2F, FCVT_F2F, FSGNJ, FMV_F2X, FMV_X2F, 
                                // Floating-Point Compare Instructions
-                               FCMP,
+                               FCMP, 
                                // Floating-Point Classify Instruction
-                               FCLASS,
+                               FCLASS, 
                                // Vectorial Floating-Point Instructions that don't directly map onto the scalar ones
-                               VFMIN, VFMAX, VFSGNJ, VFSGNJN, VFSGNJX, VFEQ, VFNE, VFLT, VFGE, VFLE, VFGT, VFCPKAB_S, VFCPKCD_S, VFCPKAB_D, VFCPKCD_D
+                               VFMIN, VFMAX, VFSGNJ, VFSGNJN, VFSGNJX, VFEQ, VFNE, VFLT, VFGE, VFLE, VFGT, VFCPKAB_S, VFCPKCD_S, VFCPKAB_D, VFCPKCD_D,
+
+                               // RoCC register source/origin , rd_rs1_rs2, R= RoCC accelerator C = core, RRC and CRC not allowed
+                               RRR,RCR,RCC,CRR,CCR,CCC
                              } fu_op;
 
     typedef struct packed {
@@ -477,6 +481,16 @@ package ariane_pkg;
         logic [63:0]              imm;
         logic [TRANS_ID_BITS-1:0] trans_id;
     } fu_data_t;
+
+    typedef stuct packed {
+        fu_t                      fu;
+        logic [6:0]               funct7;
+        logic [63:0]              rs1_dat;
+        logic [63:0]              rs2_dat;
+        logic [4:0]               rs1_adr;
+        logic [4:0]               rs2_adr;
+        logic [4:0]               rd_adr;
+    } rocc_data_t; 
 
     function automatic logic is_branch (input fu_op op);
         unique case (op) inside
@@ -521,6 +535,7 @@ package ariane_pkg;
             return 1'b0;
     endfunction;
 
+
     // ternary operations encode the rs3 address in the imm field, also add/sub
     function automatic logic is_imm_fpr (input fu_op op);
         if (FP_PRESENT) begin // makes function static for non-fp case
@@ -559,6 +574,45 @@ package ariane_pkg;
             default: return 1'b0;
         endcase
     endfunction
+
+    function automatic logic is_rs1_RoCC (input fu_op op);
+        if (ACC_PRESENT) begin // makes function static for non-fp case
+            unique case (op) inside
+                RRR,
+                CRR
+                 : return 1'b1; //rs1 from RoCC accelerator
+                default               : return 1'b0; // all other ops
+            endcase
+        end else
+            return 1'b0;
+    endfunction;
+
+    function automatic logic is_rs2_RoCC (input fu_op op);
+        if (ACC_PRESENT) begin // makes function static for non-fp case
+            unique case (op) inside
+                RRR,
+                CRR,
+                CCR,
+                RCR
+                 : return 1'b1; //rs2 from RoCC accelerator
+                default               : return 1'b0; // all other ops
+            endcase
+        end else
+            return 1'b0;
+    endfunction;
+
+    function automatic logic is_rd_RoCC (input fu_op op);
+        if (ACC_PRESENT) begin // makes function static for non-fp case
+            unique case (op) inside
+                RRR,
+                RCC,
+                RCR
+                 : return 1'b1; //rd from RoCC accelerator
+                default               : return 1'b0; // all other ops
+            endcase
+        end else
+            return 1'b0;
+    endfunction;
 
     typedef struct packed {
         logic                     valid;
@@ -606,6 +660,7 @@ package ariane_pkg;
         branchpredict_sbe_t       bp;            // branch predict scoreboard data structure
         logic                     is_compressed; // signals a compressed instructions, we need this information at the commit stage if
                                                  // we want jump accordingly e.g.: +4, +2
+      //  logic [6:0]               funct7;        // used by accelerator
     } scoreboard_entry_t;
 
     // --------------------

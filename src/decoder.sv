@@ -997,6 +997,26 @@ module decoder (
                     instruction_o.rd[4:0] = instr.utype.rd;
                 end
 
+                //Custom instruction 
+                //Custom 0 used for accelarator
+                riscv:OpcodeCustom0: begin
+                    instruction_o.fu      = ACC;
+                    //instruction_o.funct7  = instr.rtype.funct7;
+                    instruction_o.rs1[4:0] = instr.rtype.rs1;
+                    instruction_o.rs2[4:0] = instr.rtype.rs2;
+                    instruction_o.rd[4:0] = instr.rtype.rd;
+                    case(instr.rtype.funct3)    
+                        3'000:instruction_o.op=ariane_pkg::RRR;
+                        3'001:illegal_instr=1'b1;
+                        3'010:instruction_o.op=ariane_pkg::RCR;
+                        3'011:instruction_o.op=ariane_pkg::RCC;
+                        3'100:instruction_o.op=ariane_pkg::CRR;
+                        3'101:illegal_instr=1'b1;
+                        3'110:instruction_o.op=ariane_pkg::CCR;
+                        3'111:instruction_o.op=ariane_pkg::CCC;
+                    
+                end
+
                 default: illegal_instr = 1'b1;
             endcase
         end
