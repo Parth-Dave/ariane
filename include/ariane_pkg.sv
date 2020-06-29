@@ -482,7 +482,7 @@ package ariane_pkg;
         logic [TRANS_ID_BITS-1:0] trans_id;
     } fu_data_t;
 
-    typedef stuct packed {
+  /*  typedef stuct packed {
         fu_t                      fu;
         logic [6:0]               funct7;
         logic [63:0]              rs1_dat;
@@ -490,7 +490,7 @@ package ariane_pkg;
         logic [4:0]               rs1_adr;
         logic [4:0]               rs2_adr;
         logic [4:0]               rd_adr;
-    } rocc_data_t; 
+    } rocc_data_t; */
 
     function automatic logic is_branch (input fu_op op);
         unique case (op) inside
@@ -575,7 +575,7 @@ package ariane_pkg;
         endcase
     endfunction
 
-    function automatic logic is_rs1_RoCC (input fu_op op);
+    function automatic logic is_rs1_rocc (input fu_op op);
         if (ACC_PRESENT) begin // makes function static for non-fp case
             unique case (op) inside
                 RRR,
@@ -587,7 +587,7 @@ package ariane_pkg;
             return 1'b0;
     endfunction;
 
-    function automatic logic is_rs2_RoCC (input fu_op op);
+    function automatic logic is_rs2_rocc (input fu_op op);
         if (ACC_PRESENT) begin // makes function static for non-fp case
             unique case (op) inside
                 RRR,
@@ -601,7 +601,7 @@ package ariane_pkg;
             return 1'b0;
     endfunction;
 
-    function automatic logic is_rd_RoCC (input fu_op op);
+    function automatic logic is_rd_rocc (input fu_op op);
         if (ACC_PRESENT) begin // makes function static for non-fp case
             unique case (op) inside
                 RRR,
