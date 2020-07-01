@@ -57,8 +57,7 @@ module issue_stage #(
 
     input  logic                                     rocc_ready_i,
     output logic                                     rocc_valid_o,
-    output logic [6:0]                               rocc_funct7_o,
-    output logic [4:0]                               rocc_rd_o,
+    output logic [31:0]                               rocc_instr_o,
 
     // write back port
     input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0] trans_id_i,

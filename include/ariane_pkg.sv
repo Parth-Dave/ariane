@@ -482,16 +482,6 @@ package ariane_pkg;
         logic [TRANS_ID_BITS-1:0] trans_id;
     } fu_data_t;
 
-  /*  typedef stuct packed {
-        fu_t                      fu;
-        logic [6:0]               funct7;
-        logic [63:0]              rs1_dat;
-        logic [63:0]              rs2_dat;
-        logic [4:0]               rs1_adr;
-        logic [4:0]               rs2_adr;
-        logic [4:0]               rd_adr;
-    } rocc_data_t; */
-
     function automatic logic is_branch (input fu_op op);
         unique case (op) inside
             EQ, NE, LTS, GES, LTU, GEU: return 1'b1;

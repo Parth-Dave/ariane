@@ -64,8 +64,8 @@ module issue_read_operands #(
     //ACC
     input logic                                    rocc_ready_i,
     output logic                                   rocc_valid_o,
-    output logic [6:0]                             rocc_funct7_o,
-    output logic [4:0]                             rocc_rd_o,
+    output logic [31:0]                            rocc_instr_o,
+
     // commit port
     input  logic [NR_COMMIT_PORTS-1:0][4:0]        waddr_i,
     input  logic [NR_COMMIT_PORTS-1:0][63:0]       wdata_i,
@@ -94,8 +94,8 @@ module issue_read_operands #(
     logic          csr_valid_q;
     logic       branch_valid_q;
     logic         rocc_valid_q;
-    logic [6:0]  rocc_funct7_q;
-    logic [4:0]      rocc_rd_q;
+    logic [31:0]  rocc_instr_q;
+    
 
     logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
     fu_op operator_n, operator_q; // operation to perform
@@ -123,9 +123,9 @@ module issue_read_operands #(
     assign fpu_valid_o         = fpu_valid_q;
     assign fpu_fmt_o           = fpu_fmt_q;
     assign fpu_rm_o            = fpu_rm_q;
-    assign rocc_funct7_o       = rocc_funct7_q
+    assign rocc_instr_o        = rocc_instr_q
     assign rocc_valid_o        = rocc_valid_q;
-    assign rocc_rd_o           = rocc_rd_q;
+    
     // ---------------
     // Issue Stage
     // ---------------
@@ -256,7 +256,7 @@ module issue_read_operands #(
         csr_valid_q    <= 1'b0;
         branch_valid_q <= 1'b0;
         rocc_valid_q   <= 1'b0;
-        rocc_funct7_q  <= 7'b0;
+        rocc_instr_q   <= 32'b0;
       end else begin
         alu_valid_q    <= 1'b0;
         lsu_valid_q    <= 1'b0;
@@ -267,8 +267,8 @@ module issue_read_operands #(
         csr_valid_q    <= 1'b0;
         branch_valid_q <= 1'b0;
         rocc_valid_q   <= 1'b0;
-        rocc_funct7_q  <= 7'b0;
-        rocc_rd_q      <= 5'b0;
+        rocc_instr_q   <= 32'b0;
+        
         // Exception pass through:
         // If an exception has occurred simply pass it through
         // we do not want to issue this instruction
@@ -296,8 +296,8 @@ module issue_read_operands #(
                     csr_valid_q    <= 1'b1;
                 ACC:begin
                     rocc_valid_q   <= 1'b1;
-                    rocc_funct7_q  <= orig.instr.rtype.funct7;
-                    rocc_rd_q      <= issue_instr_i.rd;
+                    rocc_instr_q  <= orig.instr;
+                    
                 end
                 default:;
             endcase
@@ -312,8 +312,8 @@ module issue_read_operands #(
             csr_valid_q    <= 1'b0;
             branch_valid_q <= 1'b0;
             rocc_valid_q   <= 1'b0;
-            rocc_funct7_q  <= 7'b0;
-            rocc_rd_q      <= 5'b0;
+            rocc_instr_q   <= 32'b0;
+            
         end
       end
     end
@@ -432,8 +432,8 @@ module issue_read_operands #(
         end
     endgenerate
 
-    assign operand_a_regfile = is_rs1_fpr(issue_instr_i.op) ? fprdata[0] : (is_rs1_rocc(issue_instr_i.op) ? issue_instr_i.rs1[4:0] : rdata[0]);
-    assign operand_b_regfile = is_rs2_fpr(issue_instr_i.op) ? fprdata[1] : (is_rs2_rocc(issue_instr_i.op) ? issue_instr_i.rs2[4:0] : rdata[1]);
+    assign operand_a_regfile = is_rs1_fpr(issue_instr_i.op) ? fprdata[0] : rdata[0]);
+    assign operand_b_regfile = is_rs2_fpr(issue_instr_i.op) ? fprdata[1] : rdata[1]);
     assign operand_c_regfile = fprdata[2];
 
     // ----------------------

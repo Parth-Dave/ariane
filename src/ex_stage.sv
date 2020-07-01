@@ -79,8 +79,7 @@ module ex_stage #(
 
     //RoCC
     input  logic                                   rocc_valid_i,
-    input  logic [6:0]                             rocc_funct7_i,
-    input  logic [4:0]                             rocc_rd_i,
+    input  logic [31:0]                            rocc_instr_i,
     output logic                                   rocc_ready_o,
     output logic[TRANS_ID_BITS-1:0]                rocc_trans_id_o,
     output logic [63:0]                            rocc_result_o,
@@ -277,8 +276,7 @@ module ex_stage #(
                 .fu_data_i ( rocc_data ),
                 .rocc_trans_id_o,
                 .rocc_valid_o,
-                .rocc_funct7_i, 
-                .rocc_rd_i,
+                .rocc_instr_i, 
                 .result_o ( rocc_result_o )
             );
         end else begin : no_RoCC_gen
