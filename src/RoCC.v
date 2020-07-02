@@ -13,7 +13,8 @@ module RoCC (
 
     output logic [TRANS_ID_BITS-1:0] rocc_trans_id_o,
     output logic [63:0]              result_o,
-    output logic                     rocc_valid_o, 
+    output logic                     rocc_valid_o,
+    output exception_t               rocc_exception_o, 
    
     cmd.core                         rocc_cmd_if,
     resp.core                        rocc_resp_if
@@ -114,8 +115,9 @@ assign cmd_instr_d =  rocc_instr_i;
     assign cmd_rs2    = use_hold ? cmd_rs2_q  : cmd_rs2_d;
     assign cmd_instr  = use_hold ? cmd_instr_q  : cmd_instr_d;
 
-
-    assign rocc_trans_id_o          = use_hold ? rocc_trans_id_q : rocc_trans_id_d;
+    assign rocc_exception_o.cause  = 64'b0;
+    assign rocc_exception_o.valid  = 1'b0; 
+    assign rocc_trans_id_o         = use_hold ? rocc_trans_id_q : rocc_trans_id_d;
     assign rocc_resp_if.resp_ready = 1'b1;
     assign result_o                = rocc_resp_if.resp_data;
     assign rocc_cmd_if.cmd_rs1     = cmd_rs1;

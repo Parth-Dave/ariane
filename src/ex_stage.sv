@@ -84,6 +84,7 @@ module ex_stage #(
     output logic[TRANS_ID_BITS-1:0]                rocc_trans_id_o,
     output logic [63:0]                            rocc_result_o,
     output logic                                   rocc_valid_o,
+    output exception_t                             rocc_exception_o,
     // Memory Management
     input  logic                                   enable_translation_i,
     input  logic                                   en_ld_st_translation_i,

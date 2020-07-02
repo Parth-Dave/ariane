@@ -218,7 +218,7 @@ package ariane_pkg;
 
     // 32 registers + 1 bit for re-naming = 6
     localparam REG_ADDR_SIZE = 6;
-    localparam NR_WB_PORTS = 4;
+    localparam NR_WB_PORTS = 5;
 
     // static debug hartinfo
     localparam dm::hartinfo_t DebugHartInfo = '{
@@ -565,41 +565,25 @@ package ariane_pkg;
         endcase
     endfunction
 
-    function automatic logic is_rs1_rocc (input fu_op op);
-        if (ACC_PRESENT) begin // makes function static for non-fp case
-            unique case (op) inside
-                RRR,
-                CRR
-                 : return 1'b1; //rs1 from RoCC accelerator
-                default               : return 1'b0; // all other ops
-            endcase
+    function automatic logic is_rs1_rocc (input logic [2:0] funct3);
+        if (ACC_PRESENT) begin
+            return ~funct3[1]; // all other ops
+            
         end else
             return 1'b0;
     endfunction;
 
-    function automatic logic is_rs2_rocc (input fu_op op);
-        if (ACC_PRESENT) begin // makes function static for non-fp case
-            unique case (op) inside
-                RRR,
-                CRR,
-                CCR,
-                RCR
-                 : return 1'b1; //rs2 from RoCC accelerator
-                default               : return 1'b0; // all other ops
-            endcase
+    function automatic logic is_rs2_rocc (input logic [2:0] funct3);
+        if (ACC_PRESENT) begin 
+            return ~funct3[0]; // all other ops
+            
         end else
             return 1'b0;
     endfunction;
 
-    function automatic logic is_rd_rocc (input fu_op op);
-        if (ACC_PRESENT) begin // makes function static for non-fp case
-            unique case (op) inside
-                RRR,
-                RCC,
-                RCR
-                 : return 1'b1; //rd from RoCC accelerator
-                default               : return 1'b0; // all other ops
-            endcase
+    function automatic logic is_rd_rocc (input logic [2:0] funct3);
+        if (ACC_PRESENT) begin 
+            return ~funct3[2];
         end else
             return 1'b0;
     endfunction;

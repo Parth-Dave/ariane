@@ -199,7 +199,7 @@ module issue_read_operands #(
                 stall = 1'b1;
             end
         end
-        if (is_rs1_rocc(issue_instr_i.op))
+       
     end
 
     // Forwarding/Output MUX
@@ -214,11 +214,11 @@ module issue_read_operands #(
         fu_n       = issue_instr_i.fu;
         operator_n = issue_instr_i.op;
         // or should we forward
-        if (forward_rs1 && ~is_rs1_rocc(issue_instr_i.op)) begin
+        if (forward_rs1 && ~is_rs1_rocc(orig_instr.rtype.funct3)) begin
             operand_a_n  = rs1_i;
         end
 
-        if (forward_rs2 && ~is_rs2_rocc(issue_instr_i.op)) begin
+        if (forward_rs2 && ~is_rs2_rocc(orig_instr.rtype.funct3)) begin
             operand_b_n  = rs2_i;
         end
 
@@ -334,14 +334,14 @@ module issue_read_operands #(
                 // -----------------------------------------
                 // no other instruction has the same destination register -> issue the instruction or if rd is internal to accelerator
                 if ((is_rd_fpr(issue_instr_i.op) ? (rd_clobber_fpr_i[issue_instr_i.rd] == NONE)
-                                                : (rd_clobber_gpr_i[issue_instr_i.rd] == NONE)) || is_rd_rocc (issue_instr_i.op)) begin
+                                                : (rd_clobber_gpr_i[issue_instr_i.rd] == NONE)) || is_rd_rocc (orig_instr.rtype.funct3)) begin
                     issue_ack_o = 1'b1;
                 end
                 // or check that the target destination register will be written in this cycle by the or if rd is internal to accelerator
                 // commit stage
                 for (int unsigned i = 0; i < NR_COMMIT_PORTS; i++)
                     if ((is_rd_fpr(issue_instr_i.op) ? (we_fpr_i[i] && waddr_i[i] == issue_instr_i.rd)
-                                                    : (we_gpr_i[i] && waddr_i[i] == issue_instr_i.rd)) || is_rd_rocc (issue_instr_i.op) ) begin
+                                                    : (we_gpr_i[i] && waddr_i[i] == issue_instr_i.rd)) || is_rd_rocc (orig_instr.rtype.funct3) ) begin
                         issue_ack_o = 1'b1;
                     end
             end

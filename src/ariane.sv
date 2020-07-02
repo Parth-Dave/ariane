@@ -118,6 +118,14 @@ module ariane #(
   logic [63:0]              fpu_result_ex_id;
   logic                     fpu_valid_ex_id;
   exception_t               fpu_exception_ex_id;
+  //RoCC
+  logic                     rocc_valid_id_ex;
+  logic [31:0]              rocc_instr_id_ex;
+  logic                     rocc_ready_ex_id;
+  logic [TRANS_ID_BITS-1:0] rocc_trans_id_ex_id;
+  logic [63:0]              rocc_result_ex_id;
+  logic                     rocc_valid_ex_id;
+  exception_t               rocc_exception_ex_id;
   // CSR
   logic                     csr_valid_id_ex;
   // --------------
@@ -316,14 +324,18 @@ module ariane #(
     .fpu_valid_o                ( fpu_valid_id_ex              ),
     .fpu_fmt_o                  ( fpu_fmt_id_ex                ),
     .fpu_rm_o                   ( fpu_rm_id_ex                 ),
+    //RoCC
+    .rocc_ready_i               ( rocc_ready_ex_id             ),
+    .rocc_valid_o               ( rocc_valid_id_ex             ),
+    .rocc_instr_o               ( rocc_instr_id_ex             ),
     // CSR
     .csr_valid_o                ( csr_valid_id_ex              ),
     // Commit
     .resolved_branch_i          ( resolved_branch              ),
-    .trans_id_i                 ( {flu_trans_id_ex_id,  load_trans_id_ex_id,  store_trans_id_ex_id,   fpu_trans_id_ex_id }),
-    .wbdata_i                   ( {flu_result_ex_id,    load_result_ex_id,    store_result_ex_id,       fpu_result_ex_id }),
-    .ex_ex_i                    ( {flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id }),
-    .wt_valid_i                 ( {flu_valid_ex_id,     load_valid_ex_id,     store_valid_ex_id,         fpu_valid_ex_id }),
+    .trans_id_i                 ( {flu_trans_id_ex_id,  load_trans_id_ex_id,  store_trans_id_ex_id,   fpu_trans_id_ex_id ,  rocc_trans_id_ex_id }),
+    .wbdata_i                   ( {flu_result_ex_id,    load_result_ex_id,    store_result_ex_id,       fpu_result_ex_id ,    rocc_result_ex_id }),
+    .ex_ex_i                    ( {flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id , rocc_exception_ex_id }),
+    .wt_valid_i                 ( {flu_valid_ex_id,     load_valid_ex_id,     store_valid_ex_id,         fpu_valid_ex_id ,     rocc_valid_ex_id }),
 
     .waddr_i                    ( waddr_commit_id              ),
     .wdata_i                    ( wdata_commit_id              ),
@@ -395,6 +407,15 @@ module ariane #(
     .fpu_result_o           ( fpu_result_ex_id            ),
     .fpu_valid_o            ( fpu_valid_ex_id             ),
     .fpu_exception_o        ( fpu_exception_ex_id         ),
+
+    .rocc_valid_i           ( rocc_valid_id_ex            ),
+    .rocc_instr_i           ( rocc_instr_id_ex            ),
+    .rocc_ready_o           ( rocc_ready_ex_id            ),
+    .rocc_trans_id_o        ( rocc_trans_id_ex_id         ),
+    .rocc_result_o          ( rocc_result_ex_id           ),
+    .rocc_valid_o           ( rocc_valid_ex_id            ),
+    .rocc_exception_o       ( rocc_exception_ex_id        ),
+
     .amo_valid_commit_i     ( amo_valid_commit            ),
     .amo_req_o              ( amo_req                     ),
     .amo_resp_i             ( amo_resp                    ),

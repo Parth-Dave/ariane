@@ -14,7 +14,7 @@
 
 module scoreboard #(
   parameter int unsigned NR_ENTRIES      = 8, // must be a power of 2
-  parameter int unsigned NR_WB_PORTS     = 1,
+  parameter int unsigned NR_WB_PORTS     = 5,
   parameter int unsigned NR_COMMIT_PORTS = 2
 ) (
   input  logic                                                  clk_i,    // Clock
@@ -117,7 +117,7 @@ module scoreboard #(
       issue_en = 1'b1;
       mem_n[issue_pointer_q] = {1'b1,                                      // valid bit
                                 ariane_pkg::is_rd_fpr(decoded_instr_i.op), // whether rd goes to the fpr
-                                ariane_pkg::is_rd_rocc(decoded_instr_i.op), //whether rd is of core or rocc
+                                ariane_pkg::is_rd_rocc(decoded_instr_i.ex.tval[14:12]), //whether rd is of core or rocc
                                 decoded_instr_i                            // decoded instruction record
                                 };
     end

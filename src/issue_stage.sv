@@ -17,7 +17,7 @@ import ariane_pkg::*;
 
 module issue_stage #(
     parameter int unsigned NR_ENTRIES = 8,
-    parameter int unsigned NR_WB_PORTS = 4,
+    parameter int unsigned NR_WB_PORTS = 5,
     parameter int unsigned NR_COMMIT_PORTS = 2
 )(
     input  logic                                     clk_i,     // Clock
@@ -57,7 +57,7 @@ module issue_stage #(
 
     input  logic                                     rocc_ready_i,
     output logic                                     rocc_valid_o,
-    output logic [31:0]                               rocc_instr_o,
+    output logic [31:0]                              rocc_instr_o,
 
     // write back port
     input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0] trans_id_i,
