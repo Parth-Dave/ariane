@@ -42,7 +42,7 @@ assign rocc_trans_id_d= fu_data_i.trans_id;
 assign cmd_rs1_d  = fu_data_i.operand_a;
 assign cmd_rs2_d  = fu_data_i.operand_b;
 assign cmd_instr_d =  rocc_instr_i;
-assign result_o = rocc_resp_if.resp_data;
+
     //---------------------------------------------------------
     // Upstream protocol inversion: InValid depends on InReady
     //---------------------------------------------------------
@@ -110,16 +110,17 @@ assign result_o = rocc_resp_if.resp_data;
     end
 
     /
-    assign cmd_rs1  = use_hold ? cmd_rs1_q  : cmd_rs1_d;
-    assign cmd_rs2  = use_hold ? cmd_rs2_q  : cmd_rs2_d;
+    assign cmd_rs1    = use_hold ? cmd_rs1_q  : cmd_rs1_d;
+    assign cmd_rs2    = use_hold ? cmd_rs2_q  : cmd_rs2_d;
     assign cmd_instr  = use_hold ? cmd_instr_q  : cmd_instr_d;
-    assign rocc_trans_id_o = use_hold ? rocc_trans_id_q : rocc_trans_id_d;
 
-  
 
-    assign rocc_cmd_if.cmd_rs1  = cmd_rs1;
-    assign rocc_cmd_if.cmd_rs2  = cmd_rs2;
-    assign rocc_cmd_if.cmd_instr =  cmd_instr;
-    assign rocc_valid_o = rocc_resp_if.resp_valid;
+    assign rocc_trans_id_o          = use_hold ? rocc_trans_id_q : rocc_trans_id_d;
+    assign rocc_resp_if.resp_ready = 1'b1;
+    assign result_o                = rocc_resp_if.resp_data;
+    assign rocc_cmd_if.cmd_rs1     = cmd_rs1;
+    assign rocc_cmd_if.cmd_rs2     = cmd_rs2;
+    assign rocc_cmd_if.cmd_instr   =  cmd_instr;
+    assign rocc_valid_o            = rocc_resp_if.resp_valid;
 
 endmodule
