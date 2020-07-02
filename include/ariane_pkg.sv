@@ -468,9 +468,6 @@ package ariane_pkg;
                                FCLASS, 
                                // Vectorial Floating-Point Instructions that don't directly map onto the scalar ones
                                VFMIN, VFMAX, VFSGNJ, VFSGNJN, VFSGNJX, VFEQ, VFNE, VFLT, VFGE, VFLE, VFGT, VFCPKAB_S, VFCPKCD_S, VFCPKAB_D, VFCPKCD_D,
-
-                               // RoCC register source/origin , rd_rs1_rs2, R= RoCC accelerator C = core, RRC and CRC not allowed
-                               RRR,RCR,RCC,CRR,CCR,CCC
                              } fu_op;
 
     typedef struct packed {

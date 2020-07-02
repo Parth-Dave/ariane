@@ -118,6 +118,8 @@ module ariane #(
   logic [63:0]              fpu_result_ex_id;
   logic                     fpu_valid_ex_id;
   exception_t               fpu_exception_ex_id;
+  cmd.core                  rocc_cmd_if;
+  resp.core                 rocc_resp_if;
   //RoCC
   logic                     rocc_valid_id_ex;
   logic [31:0]              rocc_instr_id_ex;
@@ -407,7 +409,7 @@ module ariane #(
     .fpu_result_o           ( fpu_result_ex_id            ),
     .fpu_valid_o            ( fpu_valid_ex_id             ),
     .fpu_exception_o        ( fpu_exception_ex_id         ),
-
+    //RoCC signals
     .rocc_valid_i           ( rocc_valid_id_ex            ),
     .rocc_instr_i           ( rocc_instr_id_ex            ),
     .rocc_ready_o           ( rocc_ready_ex_id            ),
@@ -415,6 +417,8 @@ module ariane #(
     .rocc_result_o          ( rocc_result_ex_id           ),
     .rocc_valid_o           ( rocc_valid_ex_id            ),
     .rocc_exception_o       ( rocc_exception_ex_id        ),
+    .rocc_cmd_if            ( rocc_cmd_ex_acc             ),
+    .rocc_resp_if           ( rocc_resp_ex_acc            ),
 
     .amo_valid_commit_i     ( amo_valid_commit            ),
     .amo_req_o              ( amo_req                     ),
@@ -439,7 +443,11 @@ module ariane #(
     .dcache_req_ports_o     ( dcache_req_ports_ex_cache   ),
     .dcache_wbuffer_empty_i ( dcache_commit_wbuffer_empty )
   );
-
+  //attach accelerator here
+  accelerator RoCC_Acc(
+    .acc_cmd_if             ( rocc_cmd_ex_acc              ),
+    .acc_resp_if            ( rocc_resp_ex_acc             )
+  )
   // ---------
   // Commit
   // ---------

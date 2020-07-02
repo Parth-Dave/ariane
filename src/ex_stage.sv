@@ -15,6 +15,7 @@
 
 import ariane_pkg::*;
 
+
 module ex_stage #(
     parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
@@ -85,6 +86,8 @@ module ex_stage #(
     output logic [63:0]                            rocc_result_o,
     output logic                                   rocc_valid_o,
     output exception_t                             rocc_exception_o,
+    cmd.core                                       rocc_cmd_if,
+    resp.core                                      rocc_resp_if,
     // Memory Management
     input  logic                                   enable_translation_i,
     input  logic                                   en_ld_st_translation_i,

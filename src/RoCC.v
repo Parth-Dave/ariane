@@ -122,7 +122,7 @@ assign cmd_instr_d =  rocc_instr_i;
     assign result_o                = rocc_resp_if.resp_data;
     assign rocc_cmd_if.cmd_rs1     = cmd_rs1;
     assign rocc_cmd_if.cmd_rs2     = cmd_rs2;
-    assign rocc_cmd_if.cmd_instr   =  cmd_instr;
+    assign rocc_cmd_if.cmd_instr   = cmd_instr;
     assign rocc_valid_o            = rocc_resp_if.resp_valid;
 
 endmodule
