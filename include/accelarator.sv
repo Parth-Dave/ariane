@@ -13,7 +13,7 @@ interface cmd #(
   typedef logic [ACC_INSTR_WIDTH-1:0]  instr_t;
   typedef logic [ACC_DATA_WIDTH-1:0]  data_t;
   
-  instr_t  cmd_inst;
+  instr_t  cmd_instr;
   data_t   cmd_rs1;
   data_t   cmd_rs2;
   logic    cmd_ready;
@@ -21,12 +21,12 @@ interface cmd #(
 
   modport core (
     input cmd_ready,
-    output cmd_inst,cmd_rs1,cmd_rs2,cmd_valid
+    output cmd_instr,cmd_rs1,cmd_rs2,cmd_valid
   );//modport for ariane
 
   modport acc (
     output cmd_ready,
-    input cmd_inst,cmd_rs1,cmd_rs2,cmd_valid
+    input cmd_instr,cmd_rs1,cmd_rs2,cmd_valid
   );//modport for accelerator
 
 endinterface
