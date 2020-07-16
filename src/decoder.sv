@@ -999,7 +999,7 @@ module decoder (
 
                 //Custom instruction 
                 //Custom 0 used for accelarator
-                riscv:OpcodeCustom0: begin
+                riscv::OpcodeCustom0: begin
                     instruction_o.fu      = ACC;
                     //instruction_o.funct7  = instr.rtype.funct7;
                     instruction_o.rs1[4:0] = instr.rtype.rs1;

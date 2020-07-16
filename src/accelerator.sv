@@ -1,6 +1,6 @@
 module accelerator (
-    cmd.acc  acc_cmd_if,
-    resp.acc acc_resp_if
+    ROCC_CMD.acc  acc_cmd_if,
+    ROCC_RESP.acc acc_resp_if
 );
 //Sample accelerator
 /*User can either implement their RoCC accelerators here or in a seperate module and replace accelerator module with that module in ariane.sv*/

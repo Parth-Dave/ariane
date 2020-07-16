@@ -16,8 +16,8 @@ module RoCC (
     output logic                     rocc_valid_o,
     output exception_t               rocc_exception_o, 
    
-    cmd.core                         rocc_cmd_if,
-    resp.core                        rocc_resp_if
+    ROCC_CMD.core                     rocc_cmd_if,
+    ROCC_RESP.core                    rocc_resp_if
 );
 
 logic                     cmd_valid_q;

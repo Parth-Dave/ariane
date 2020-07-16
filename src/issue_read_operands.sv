@@ -123,7 +123,7 @@ module issue_read_operands #(
     assign fpu_valid_o         = fpu_valid_q;
     assign fpu_fmt_o           = fpu_fmt_q;
     assign fpu_rm_o            = fpu_rm_q;
-    assign rocc_instr_o        = rocc_instr_q
+    assign rocc_instr_o        = rocc_instr_q;
     assign rocc_valid_o        = rocc_valid_q;
     
     // ---------------
@@ -296,7 +296,7 @@ module issue_read_operands #(
                     csr_valid_q    <= 1'b1;
                 ACC:begin
                     rocc_valid_q   <= 1'b1;
-                    rocc_instr_q  <= orig.instr;
+                    rocc_instr_q  <= orig_instr;
                     
                 end
                 default:;
@@ -432,8 +432,8 @@ module issue_read_operands #(
         end
     endgenerate
 
-    assign operand_a_regfile = is_rs1_fpr(issue_instr_i.op) ? fprdata[0] : rdata[0]);
-    assign operand_b_regfile = is_rs2_fpr(issue_instr_i.op) ? fprdata[1] : rdata[1]);
+    assign operand_a_regfile = is_rs1_fpr(issue_instr_i.op) ? fprdata[0] : rdata[0];
+    assign operand_b_regfile = is_rs2_fpr(issue_instr_i.op) ? fprdata[1] : rdata[1];
     assign operand_c_regfile = fprdata[2];
 
     // ----------------------

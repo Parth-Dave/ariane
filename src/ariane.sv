@@ -14,6 +14,7 @@
 
 import ariane_pkg::*;
 
+
 module ariane #(
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig
 ) (
@@ -118,8 +119,8 @@ module ariane #(
   logic [63:0]              fpu_result_ex_id;
   logic                     fpu_valid_ex_id;
   exception_t               fpu_exception_ex_id;
-  cmd.core                  rocc_cmd_if;
-  resp.core                 rocc_resp_if;
+  ROCC_CMD.core             rocc_cmd_if;
+  ROCC_RESP.core            rocc_resp_if;
   //RoCC
   logic                     rocc_valid_id_ex;
   logic [31:0]              rocc_instr_id_ex;
@@ -447,7 +448,7 @@ module ariane #(
   accelerator RoCC_Acc(
     .acc_cmd_if             ( rocc_cmd_ex_acc              ),
     .acc_resp_if            ( rocc_resp_ex_acc             )
-  )
+  );
   // ---------
   // Commit
   // ---------

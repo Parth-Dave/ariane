@@ -2,7 +2,7 @@
 
 
 /// An accelarator interface.
-interface cmd #(
+interface ROCC_CMD #(
   parameter ACC_DATA_WIDTH = 64,
   parameter ACC_INSTR_WIDTH = 32
 
@@ -33,7 +33,7 @@ endinterface
 
 
 //interface for accelarator response
-interface resp
+interface ROCC_RESP
 #(
   parameter ACC_DATA_WIDTH = 64,
   parameter ACC_REG_ADDR_WIDTH = 5

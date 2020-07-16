@@ -86,8 +86,8 @@ module ex_stage #(
     output logic [63:0]                            rocc_result_o,
     output logic                                   rocc_valid_o,
     output exception_t                             rocc_exception_o,
-    cmd.core                                       rocc_cmd_if,
-    resp.core                                      rocc_resp_if,
+    ROCC_CMD.core                                       rocc_cmd_if,
+    ROCC_RESP.core                                      rocc_resp_if,
     // Memory Management
     input  logic                                   enable_translation_i,
     input  logic                                   en_ld_st_translation_i,
