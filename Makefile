@@ -82,8 +82,7 @@ ariane_pkg := include/riscv_pkg.sv                          \
               tb/ariane_soc_pkg.sv                          \
               include/ariane_axi_pkg.sv                     \
               src/fpu/src/fpnew_pkg.sv                      \
-              src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv \
-              include/acc_intf.sv
+              src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
 ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
 
 # utility modules
@@ -379,7 +378,6 @@ check-benchmarks:
 verilate_command := $(verilator)                                                                                 \
                     $(filter-out %.vhd, $(ariane_pkg))                                                           \
                     $(filter-out src/fpu_wrap.sv, $(filter-out %.vhd, $(src)))                                   \
-                    $(filter-out src/rocc.sv, $(filter-out %.vhd, $(src)))                                   \
                     +define+$(defines)                                                                           \
                     src/util/sram.sv                                                                             \
                     tb/common/mock_uart.sv                                                                       \
@@ -395,7 +393,6 @@ verilate_command := $(verilator)                                                
                     -Wno-UNUSED                                                                                  \
                     -Wno-UNOPTFLAT                                                                               \
                     -Wno-BLKANDNBLK                                                                              \
-                    -Wno-MODDUP                                                                                  \
                     -Wno-style                                                                                   \
                     $(if $(DROMAJO), -DDROMAJO=1,)                                                               \
                     $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                                      \
