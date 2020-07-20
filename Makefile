@@ -395,6 +395,7 @@ verilate_command := $(verilator)                                                
                     -Wno-UNUSED                                                                                  \
                     -Wno-UNOPTFLAT                                                                               \
                     -Wno-BLKANDNBLK                                                                              \
+                    -Wno-MODDUP                                                                                  \
                     -Wno-style                                                                                   \
                     $(if $(DROMAJO), -DDROMAJO=1,)                                                               \
                     $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                                      \

@@ -24,7 +24,11 @@ module rocc (
     input  logic                     rocc_resp_valid_i,
     output logic                     rocc_resp_ready_o
 );
-
+logic [63:0]              cmd_rs1;
+logic [63:0]              cmd_rs2;
+logic [31:0]              cmd_instr;
+logic                     hold_inputs;
+logic                     use_hold;
 logic                     cmd_valid_q;
 logic [63:0]              cmd_rs1_q;
 logic [63:0]              cmd_rs2_q;
