@@ -660,9 +660,14 @@ module ariane_testharness #(
   // ---------------
   // Core
   // ---------------
-  ariane_axi::req_t    axi_ariane_req;
-  ariane_axi::resp_t   axi_ariane_resp;
-
+  ariane_axi::req_t       axi_ariane_req;
+  ariane_axi::resp_t      axi_ariane_resp;
+  ariane_pkg::rocc_cmd_t  rocc_cmd_o;
+  ariane_pkg::rocc_resp_t rocc_resp_i;
+  logic                   rocc_cmd_ready_i;
+  logic                   rocc_cmd_valid_o;
+  logic                   rocc_resp_valid_i;
+  logic                   rocc_resp_ready_o;
   ariane #(
     .ArianeCfg  ( ariane_soc::ArianeSocCfg )
   ) i_ariane (
@@ -673,6 +678,12 @@ module ariane_testharness #(
     .irq_i                ( irqs                ),
     .ipi_i                ( ipi                 ),
     .time_irq_i           ( timer_irq           ),
+    .rocc_cmd_o           ( rocc_cmd_o          ),
+    .rocc_resp_i          ( rocc_resp_i         ),
+    .rocc_cmd_valid_o     ( rocc_cmd_valid_o    ),
+    .rocc_cmd_ready_i     ( rocc_cmd_ready_i    ),
+    .rocc_resp_ready_o    ( rocc_resp_ready_o   ),
+    .rocc_resp_valid_i    ( rocc_resp_valid_i   ),
 // Disable Debug when simulating with Spike
 `ifdef SPIKE_TANDEM
     .debug_req_i          ( 1'b0                ),

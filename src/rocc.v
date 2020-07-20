@@ -1,4 +1,4 @@
-module RoCC (
+module rocc (
     input  logic                     clk_i,
     input  logic                     rst_ni,
     input  logic                     flush_i,
@@ -16,8 +16,13 @@ module RoCC (
     output logic                     rocc_valid_o,
     output exception_t               rocc_exception_o, 
    
-    ROCC_CMD.core                     rocc_cmd_if,
-    ROCC_RESP.core                    rocc_resp_if
+    output rocc_cmd_t                rocc_cmd_o,
+    output logic                     rocc_cmd_valid_o,
+    input  logic                     rocc_cmd_ready_i,
+
+    input  rocc_resp_t               rocc_resp_i,
+    input  logic                     rocc_resp_valid_i,
+    output logic                     rocc_resp_ready_o
 );
 
 logic                     cmd_valid_q;
@@ -51,7 +56,7 @@ assign cmd_instr_d =  rocc_instr_i;
     always_comb begin : send_cmd_FSM
       // Default Values
       rocc_ready_o  = 1'b0;
-      rocc_cmd_if.cmd_valid = 1'b0;
+      rocc_cmd_valid_o= 1'b0;
       hold_inputs = 1'b0;    // hold register disabled
       use_hold    = 1'b0;    // inputs go directly to unit
       state_d     = state_q; // stay in the same state
@@ -61,9 +66,9 @@ assign cmd_instr_d =  rocc_instr_i;
         // Default state, ready for instructions
         READY: begin
           rocc_ready_o  = 1'b1;        // Act as if RoCC ready
-          rocc_cmd_if.cmd_valid = rocc_valid_i; // Forward input valid to RoCC
+          rocc_cmd_valid_o = rocc_valid_i; // Forward input valid to RoCC
           // There is a transaction but the RoCC can't handle it
-          if (rocc_valid_i & ~rocc_cmd_if.cmd_ready) begin
+          if (rocc_valid_i & ~rocc_cmd_ready_i) begin
             rocc_ready_o = 1'b0;  // No token given to Issue
             hold_inputs = 1'b1;  // save inputs to the holding register
             state_d     = STALL; // stall future incoming requests
@@ -71,10 +76,10 @@ assign cmd_instr_d =  rocc_instr_i;
         end
         // We're stalling the upstream (ready=0)
         STALL: begin
-          rocc_cmd_if.cmd_valid = 1'b1; // we have data for the RoCC
+          rocc_cmd_valid_o = 1'b1; // we have data for the RoCC
           use_hold     = 1'b1; // the data comes from the hold reg
           // Wait until it's consumed
-          if (rocc_cmd_if.cmd_ready) begin
+          if (rocc_cmd_ready_i) begin
             rocc_ready_o = 1'b1;  // Give a token to issue
             state_d     = READY; // accept future requests
           end
@@ -110,7 +115,7 @@ assign cmd_instr_d =  rocc_instr_i;
       end
     end
 
-    /
+    
     assign cmd_rs1    = use_hold ? cmd_rs1_q  : cmd_rs1_d;
     assign cmd_rs2    = use_hold ? cmd_rs2_q  : cmd_rs2_d;
     assign cmd_instr  = use_hold ? cmd_instr_q  : cmd_instr_d;
@@ -118,11 +123,11 @@ assign cmd_instr_d =  rocc_instr_i;
     assign rocc_exception_o.cause  = 64'b0;
     assign rocc_exception_o.valid  = 1'b0; 
     assign rocc_trans_id_o         = use_hold ? rocc_trans_id_q : rocc_trans_id_d;
-    assign rocc_resp_if.resp_ready = 1'b1;
-    assign result_o                = rocc_resp_if.resp_data;
-    assign rocc_cmd_if.cmd_rs1     = cmd_rs1;
-    assign rocc_cmd_if.cmd_rs2     = cmd_rs2;
-    assign rocc_cmd_if.cmd_instr   = cmd_instr;
-    assign rocc_valid_o            = rocc_resp_if.resp_valid;
+    assign rocc_resp_ready_o = 1'b1;
+    assign result_o                = rocc_resp_i.resp_data;
+    assign rocc_cmd_o.cmd_rs1     = cmd_rs1;
+    assign rocc_cmd_o.cmd_rs2     = cmd_rs2;
+    assign rocc_cmd_o.cmd_instr   = cmd_instr;
+    assign rocc_valid_o            = rocc_resp_valid_i;
 
 endmodule

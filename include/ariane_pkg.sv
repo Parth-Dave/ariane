@@ -634,6 +634,18 @@ package ariane_pkg;
       //  logic [6:0]               funct7;        // used by accelerator
     } scoreboard_entry_t;
 
+    //RoCC Strucs
+
+    typedef struct packed  { 
+        logic [31:0] cmd_instr;
+        logic [4:0] cmd_rs1;
+        logic [4:0] cmd_rs2; 
+     } rocc_cmd_t;
+
+     typedef struct packed  { 
+        logic [31:0] resp_data;
+        logic [4:0] resp_rd; 
+     } rocc_resp_t;
     // --------------------
     // Atomics
     // --------------------

@@ -30,6 +30,14 @@ module ariane #(
   // Timer facilities
   input  logic                         time_irq_i,   // timer interrupt in (async)
   input  logic                         debug_req_i,  // debug request (async)
+ 
+  output rocc_cmd_t                    rocc_cmd_o,    //rocc cmd inteface
+  output logic                         rocc_cmd_valid_o,
+  input  logic                         rocc_cmd_ready_i,
+
+  input  rocc_resp_t                   rocc_resp_i,     //rocc resp interface
+  input  logic                         rocc_resp_valid_i,
+  output logic                         rocc_resp_ready_o,
 `ifdef FIRESIM_TRACE
   // firesim trace port
   output traced_instr_pkg::trace_port_t trace_o,
@@ -119,8 +127,7 @@ module ariane #(
   logic [63:0]              fpu_result_ex_id;
   logic                     fpu_valid_ex_id;
   exception_t               fpu_exception_ex_id;
-  ROCC_CMD.core             rocc_cmd_if;
-  ROCC_RESP.core            rocc_resp_if;
+
   //RoCC
   logic                     rocc_valid_id_ex;
   logic [31:0]              rocc_instr_id_ex;
@@ -129,6 +136,12 @@ module ariane #(
   logic [63:0]              rocc_result_ex_id;
   logic                     rocc_valid_ex_id;
   exception_t               rocc_exception_ex_id;
+  rocc_cmd_t                rocc_cmd_ex;
+  logic                     rocc_cmd_valid_ex;
+  logic                     rocc_cmd_ready_ex;
+
+  rocc_resp_t               rocc_resp_ex;
+
   // CSR
   logic                     csr_valid_id_ex;
   // --------------
@@ -418,8 +431,12 @@ module ariane #(
     .rocc_result_o          ( rocc_result_ex_id           ),
     .rocc_valid_o           ( rocc_valid_ex_id            ),
     .rocc_exception_o       ( rocc_exception_ex_id        ),
-    .rocc_cmd_if            ( rocc_cmd_ex_acc             ),
-    .rocc_resp_if           ( rocc_resp_ex_acc            ),
+    .rocc_cmd_o             ( rocc_cmd_o                  ),
+    .rocc_resp_i            ( rocc_resp_i                 ),
+    .rocc_cmd_valid_o       ( rocc_cmd_valid_o            ),
+    .rocc_cmd_ready_i       ( rocc_cmd_ready_i            ),
+    .rocc_resp_ready_o      ( rocc_resp_ready_o           ),
+    .rocc_resp_valid_i      ( rocc_resp_valid_i           ),
 
     .amo_valid_commit_i     ( amo_valid_commit            ),
     .amo_req_o              ( amo_req                     ),
@@ -443,11 +460,6 @@ module ariane #(
     .dcache_req_ports_i     ( dcache_req_ports_cache_ex   ),
     .dcache_req_ports_o     ( dcache_req_ports_ex_cache   ),
     .dcache_wbuffer_empty_i ( dcache_commit_wbuffer_empty )
-  );
-  //attach accelerator here
-  accelerator RoCC_Acc(
-    .acc_cmd_if             ( rocc_cmd_ex_acc              ),
-    .acc_resp_if            ( rocc_resp_ex_acc             )
   );
   // ---------
   // Commit

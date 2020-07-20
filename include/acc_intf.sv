@@ -1,3 +1,34 @@
+/*
+//interface to req directly from memory
+interface mem_req #(
+  
+);
+
+  
+
+  modport mmu ();
+
+  modport acc ();
+
+  
+
+endinterface
+
+// respond from memory to accelartor
+interface mem_resp #(
+  
+);
+
+  
+
+  modport mmu ();
+
+  modport acc ();
+
+  
+
+endinterface
+*/
 
 
 
@@ -5,7 +36,6 @@
 interface ROCC_CMD #(
   parameter ACC_DATA_WIDTH = 64,
   parameter ACC_INSTR_WIDTH = 32
-
 );// the cmd interface
 
  
@@ -59,34 +89,3 @@ interface ROCC_RESP
 
 endinterface
 
-/*
-//interface to req directly from memory
-interface mem_req #(
-  
-);
-
-  
-
-  modport mmu ();
-
-  modport acc ();
-
-  
-
-endinterface
-
-// respond from memory to accelartor
-interface mem_resp #(
-  
-);
-
-  
-
-  modport mmu ();
-
-  modport acc ();
-
-  
-
-endinterface
-*/

@@ -86,8 +86,13 @@ module ex_stage #(
     output logic [63:0]                            rocc_result_o,
     output logic                                   rocc_valid_o,
     output exception_t                             rocc_exception_o,
-    ROCC_CMD.core                                       rocc_cmd_if,
-    ROCC_RESP.core                                      rocc_resp_if,
+    output rocc_cmd_t                              rocc_cmd_o,
+    output logic                                   rocc_cmd_valid_o,
+    input  logic                                   rocc_cmd_ready_i,
+    input  rocc_resp_t                             rocc_resp_i,
+    input  logic                                   rocc_resp_valid_i,
+    output logic                                   rocc_resp_ready_o,
+
     // Memory Management
     input  logic                                   enable_translation_i,
     input  logic                                   en_ld_st_translation_i,
@@ -271,7 +276,7 @@ module ex_stage #(
             fu_data_t rocc_data;
             assign rocc_data  = rocc_valid_i ? fu_data_i  : '0;
 
-            RoCC rocc_i (
+            rocc rocc_i (
                 .clk_i,
                 .rst_ni,
                 .flush_i,
@@ -281,7 +286,8 @@ module ex_stage #(
                 .rocc_trans_id_o,
                 .rocc_valid_o,
                 .rocc_instr_i, 
-                .result_o ( rocc_result_o )
+                .result_o ( rocc_result_o ),
+                .*
             );
         end else begin : no_RoCC_gen
             assign rocc_ready_o     = '0;

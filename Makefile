@@ -370,6 +370,7 @@ check-benchmarks:
 verilate_command := $(verilator)                                                                                 \
                     $(filter-out %.vhd, $(ariane_pkg))                                                           \
                     $(filter-out src/fpu_wrap.sv, $(filter-out %.vhd, $(src)))                                   \
+                    $(filter-out src/rocc.sv, $(filter-out %.vhd, $(src)))                                   \
                     +define+$(defines)                                                                           \
                     src/util/sram.sv                                                                             \
                     tb/common/mock_uart.sv                                                                       \
