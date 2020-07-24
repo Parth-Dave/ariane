@@ -115,6 +115,8 @@ src/store_unit.sv
 src/tlb.sv
 src/commit_stage.sv
 src/rocc.sv
+src/pmp/src/pmp.sv
+src/pmp/src/pmp_entry.sv
 src/cache_subsystem/wt_dcache_ctrl.sv
 src/cache_subsystem/wt_dcache_mem.sv
 src/cache_subsystem/wt_dcache_missunit.sv
