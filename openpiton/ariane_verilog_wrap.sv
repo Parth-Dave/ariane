@@ -83,10 +83,11 @@ module ariane_verilog_wrap #(
   assign axi_resp  = axi_resp_i;
 `endif
 
-    rocc_cmd_t  rocc_cmd;
-    rocc_resp_t rocc_resp;
-    assign rocc_resp = rocc_resp_i;
-    assign rocc_cmd_o  = rocc_cmd;
+  rocc_cmd_t  rocc_cmd;
+  rocc_resp_t rocc_resp;
+
+  assign rocc_resp = rocc_resp_i;
+  assign rocc_cmd_o  = rocc_cmd;
 
   /////////////////////////////
   // Core wakeup mechanism
