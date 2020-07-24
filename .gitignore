@@ -33,3 +33,4 @@ tb/riscv-isa-sim/
 work-*/*
 hello.c
 hello.elf
+test.elf
