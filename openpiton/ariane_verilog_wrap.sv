@@ -37,19 +37,25 @@ module ariane_verilog_wrap #(
   // PMP
   parameter int unsigned               NrPMPEntries          =  8
 ) (
-  input                       clk_i,
-  input                       reset_l,      // this is an openpiton-specific name, do not change (hier. paths in TB use this)
-  output                      spc_grst_l,   // this is an openpiton-specific name, do not change (hier. paths in TB use this)
+  input                             clk_i,
+  input                             reset_l,      // this is an openpiton-specific name, do not change (hier. paths in TB use this)
+  output                            spc_grst_l,   // this is an openpiton-specific name, do not change (hier. paths in TB use this)
   // Core ID, Cluster ID and boot address are considered more or less static
-  input  [63:0]               boot_addr_i,  // reset boot address
-  input  [63:0]               hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
+  input  [63:0]                     boot_addr_i,  // reset boot address
+  input  [63:0]                     hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
   // Interrupt inputs
-  input  [1:0]                irq_i,        // level sensitive IR lines, mip & sip (async)
-  input                       ipi_i,        // inter-processor interrupts (async)
+  input  [1:0]                      irq_i,        // level sensitive IR lines, mip & sip (async)
+  input                             ipi_i,        // inter-processor interrupts (async)
   // Timer facilities
-  input                       time_irq_i,   // timer interrupt in (async)
-  input                       debug_req_i,  // debug request (async)
+  input                             time_irq_i,   // timer interrupt in (async)
+  input                             debug_req_i,  // debug request (async)
+  output [$size(rocc_cmd_t)-1:0]    rocc_cmd_o,    //rocc cmd inteface
+  output logic                      rocc_cmd_valid_o,
+  input  logic                      rocc_cmd_ready_i,
 
+  input  [$size(rocc_resp_t)-1:0]   rocc_resp_i,     //rocc resp interface
+  input  logic                      rocc_resp_valid_i,
+  output logic                      rocc_resp_ready_o,
 `ifdef PITON_ARIANE
   // L15 (memory side)
   output [$size(wt_cache_pkg::l15_req_t)-1:0]  l15_req_o,
@@ -77,6 +83,10 @@ module ariane_verilog_wrap #(
   assign axi_resp  = axi_resp_i;
 `endif
 
+    rocc_cmd_t  rocc_cmd;
+    rocc_resp_t rocc_resp;
+    assign rocc_resp = rocc_resp_i;
+    assign rocc_cmd_o  = rocc_cmd;
 
   /////////////////////////////
   // Core wakeup mechanism
@@ -194,14 +204,22 @@ module ariane_verilog_wrap #(
   ariane #(
     .ArianeCfg ( ArianeOpenPitonCfg )
   ) ariane (
-    .clk_i       ( clk_i      ),
-    .rst_ni      ( spc_grst_l ),
-    .boot_addr_i              ,// constant
-    .hart_id_i                ,// constant
-    .irq_i       ( irq        ),
-    .ipi_i       ( ipi        ),
-    .time_irq_i  ( time_irq   ),
-    .debug_req_i ( debug_req  ),
+    .clk_i              ( clk_i             ),
+    .rst_ni             ( spc_grst_l        ),
+    .boot_addr_i                            ,// constant
+    .hart_id_i                              ,// constant
+    .irq_i              ( irq               ),
+    .ipi_i              ( ipi               ),
+    .time_irq_i         ( time_irq          ),
+    .debug_req_i        ( debug_req         ),
+
+    .rocc_cmd_o         ( rocc_cmd          ),
+    .rocc_cmd_valid_o   ( rocc_cmd_valid_o    ),
+    .rocc_cmd_ready_i   ( rocc_cmd_ready_i    ),
+    .rocc_resp_i        ( rocc_resp         ),
+    .rocc_resp_valid_i  ( rocc_resp_valid_i   ),
+    .rocc_resp_ready_o  ( rocc_resp_ready_o   ),
+
 `ifdef PITON_ARIANE
     .l15_req_o   ( l15_req   ),
     .l15_rtrn_i  ( l15_rtrn  )
