@@ -8,7 +8,7 @@ module rocc (
     output logic                     rocc_ready_o,  // FU is ready e.g. not busy
 
     input  fu_data_t                 fu_data_i,
-    input  logic [6:0]               rocc_instr_i,
+    input  logic [31:0]              rocc_instr_i,
     
 
     output logic [TRANS_ID_BITS-1:0] rocc_trans_id_o,
