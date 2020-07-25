@@ -470,7 +470,9 @@ package ariane_pkg;
                                // Floating-Point Classify Instruction
                                FCLASS, 
                                // Vectorial Floating-Point Instructions that don't directly map onto the scalar ones
-                               VFMIN, VFMAX, VFSGNJ, VFSGNJN, VFSGNJX, VFEQ, VFNE, VFLT, VFGE, VFLE, VFGT, VFCPKAB_S, VFCPKCD_S, VFCPKAB_D, VFCPKCD_D
+                               VFMIN, VFMAX, VFSGNJ, VFSGNJN, VFSGNJX, VFEQ, VFNE, VFLT, VFGE, VFLE, VFGT, VFCPKAB_S, VFCPKCD_S, VFCPKAB_D, VFCPKCD_D,
+                               //Rocc
+                               ROCC
                              } fu_op;
 
     typedef struct packed {
@@ -565,24 +567,24 @@ package ariane_pkg;
         endcase
     endfunction
 
-    function automatic logic is_rs1_rocc (input logic [2:0] funct3);
-        if (ACC_PRESENT) begin
+    function automatic logic is_rs1_rocc (input logic [2:0] funct3, input fu_t op);
+        if (ACC_PRESENT & op == ACC) begin
             return ~funct3[1]; // all other ops
             
         end else
             return 1'b0;
     endfunction;
 
-    function automatic logic is_rs2_rocc (input logic [2:0] funct3);
-        if (ACC_PRESENT) begin 
+    function automatic logic is_rs2_rocc (input logic [2:0] funct3, input fu_t op);
+        if (ACC_PRESENT & op == ACC) begin 
             return ~funct3[0]; // all other ops
             
         end else
             return 1'b0;
     endfunction;
 
-    function automatic logic is_rd_rocc (input logic [2:0] funct3);
-        if (ACC_PRESENT) begin 
+    function automatic logic is_rd_rocc (input logic [2:0] funct3, input fu_t op);
+        if (ACC_PRESENT & op == ACC) begin 
             return ~funct3[2];
         end else
             return 1'b0;

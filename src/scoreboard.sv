@@ -117,7 +117,7 @@ module scoreboard #(
       issue_en = 1'b1;
       mem_n[issue_pointer_q] = {1'b1,                                      // valid bit
                                 ariane_pkg::is_rd_fpr(decoded_instr_i.op), // whether rd goes to the fpr
-                                ariane_pkg::is_rd_rocc(decoded_instr_i.ex.tval[14:12]), //whether rd is of core or rocc
+                                ariane_pkg::is_rd_rocc(decoded_instr_i.ex.tval[14:12],decoded_instr_i.fu), //whether rd is of core or rocc
                                 decoded_instr_i                            // decoded instruction record
                                 };
     end

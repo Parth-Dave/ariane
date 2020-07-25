@@ -1001,6 +1001,7 @@ module decoder (
                 //Custom 0 used for accelarator
                 riscv::OpcodeCustom0: begin
                     instruction_o.fu      = ACC;
+                    instruction_o.op      =ariane_pkg::ROCC;
                     //instruction_o.funct7  = instr.rtype.funct7;
                     instruction_o.rs1[4:0] = instr.rtype.rs1;
                     instruction_o.rs2[4:0] = instr.rtype.rs2;
