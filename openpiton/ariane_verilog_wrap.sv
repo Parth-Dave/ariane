@@ -49,13 +49,7 @@ module ariane_verilog_wrap #(
   // Timer facilities
   input                             time_irq_i,   // timer interrupt in (async)
   input                             debug_req_i,  // debug request (async)
-  output [$size(rocc_cmd_t)-1:0]    rocc_cmd_o,    //rocc cmd inteface
-  output logic                      rocc_cmd_valid_o,
-  input  logic                      rocc_cmd_ready_i,
-
-  input  [$size(rocc_resp_t)-1:0]   rocc_resp_i,     //rocc resp interface
-  input  logic                      rocc_resp_valid_i,
-  output logic                      rocc_resp_ready_o,
+  
 `ifdef PITON_ARIANE
   // L15 (memory side)
   output [$size(wt_cache_pkg::l15_req_t)-1:0]  l15_req_o,
@@ -83,11 +77,7 @@ module ariane_verilog_wrap #(
   assign axi_resp  = axi_resp_i;
 `endif
 
-  rocc_cmd_t  rocc_cmd;
-  rocc_resp_t rocc_resp;
-
-  assign rocc_resp = rocc_resp_i;
-  assign rocc_cmd_o  = rocc_cmd;
+ 
 
   /////////////////////////////
   // Core wakeup mechanism
@@ -214,10 +204,10 @@ module ariane_verilog_wrap #(
     .time_irq_i         ( time_irq          ),
     .debug_req_i        ( debug_req         ),
 
-    .rocc_cmd_o         ( rocc_cmd          ),
+    .rocc_cmd_o         ( rocc_cmd_o          ),
     .rocc_cmd_valid_o   ( rocc_cmd_valid_o    ),
     .rocc_cmd_ready_i   ( rocc_cmd_ready_i    ),
-    .rocc_resp_i        ( rocc_resp         ),
+    .rocc_resp_i        ( rocc_resp_i         ),
     .rocc_resp_valid_i  ( rocc_resp_valid_i   ),
     .rocc_resp_ready_o  ( rocc_resp_ready_o   ),
 
@@ -229,5 +219,13 @@ module ariane_verilog_wrap #(
     .axi_resp_i  ( axi_resp  )
 `endif
   );
+accelerator rocc_acc(
+  .rocc_cmd_i           ( rocc_cmd_o        ),
+  .rocc_cmd_valid_i     ( rocc_cmd_valid_o  ),
+  .rocc_cmd_ready_o     ( rocc_cmd_ready_i  ),
 
+  .rocc_resp_o          ( rocc_resp_i       ),
+  .rocc_resp_ready_i    ( rocc_resp_ready_o ),
+  .rocc_resp_valid_o    ( rocc_resp_valid_i )
+)
 endmodule // ariane_verilog_wrap
