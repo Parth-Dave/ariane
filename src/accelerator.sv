@@ -1,11 +1,11 @@
 module accelerator (
-    rocc_cmd_t  rocc_cmd_i,
-    logic       rocc_cmd_valid_i,
-    logic       rocc_cmd_ready_o,
+    input  rocc_cmd_t  rocc_cmd_i,
+    input  logic       rocc_cmd_valid_i,
+    output logic       rocc_cmd_ready_o,
     
-    rocc_resp_t rocc_resp_o,
-    logic       rocc_resp_valid_o,
-    logic       rocc_resp_ready_i
+    output rocc_resp_t rocc_resp_o,
+    output logic       rocc_resp_valid_o,
+    input  logic       rocc_resp_ready_i
     
 );
 //Sample accelerator
