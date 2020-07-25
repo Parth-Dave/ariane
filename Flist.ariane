@@ -81,6 +81,7 @@ src/axi_adapter.sv
 src/alu.sv
 src/fpu_wrap.sv
 src/ariane.sv
+src/accelerator.sv
 src/branch_unit.sv
 src/compressed_decoder.sv
 src/controller.sv
