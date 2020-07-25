@@ -219,6 +219,7 @@ module ariane_verilog_wrap #(
     .axi_resp_i  ( axi_resp  )
 `endif
   );
+  
 accelerator rocc_acc(
   .rocc_cmd_i           ( rocc_cmd_o        ),
   .rocc_cmd_valid_i     ( rocc_cmd_valid_o  ),
@@ -227,5 +228,6 @@ accelerator rocc_acc(
   .rocc_resp_o          ( rocc_resp_i       ),
   .rocc_resp_ready_i    ( rocc_resp_ready_o ),
   .rocc_resp_valid_o    ( rocc_resp_valid_i )
-)
+);
+
 endmodule // ariane_verilog_wrap
