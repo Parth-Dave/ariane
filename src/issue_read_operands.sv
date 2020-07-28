@@ -143,7 +143,7 @@ module issue_read_operands #(
             LOAD, STORE:
                 fu_busy = ~lsu_ready_i;
             ACC:
-                fu_busy=~rocc_ready_i;
+                fu_busy = ~rocc_ready_i;
             default:
                 fu_busy = 1'b0;
         endcase
@@ -201,7 +201,13 @@ module issue_read_operands #(
         end
        
     end
+    logic is_rs1_rocc_issue;
+    logic is_rd_rocc_issue;
+    logic is_rs2_rocc_issue;
 
+    assign is_rs1_rocc_issue = is_rs1_rocc(orig_instr.rtype.funct3,issue_instr_i.fu);
+    assign is_rs2_rocc_issue = is_rs2_rocc(orig_instr.rtype.funct3,issue_instr_i.fu);
+    assign is_rd_rocc_issue = is_rd_rocc(orig_instr.rtype.funct3,issue_instr_i.fu);
     // Forwarding/Output MUX
     always_comb begin : forwarding_operand_select
         // default is regfiles (gpr or fpr)
