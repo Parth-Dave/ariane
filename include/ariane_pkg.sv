@@ -155,10 +155,9 @@ package ariane_pkg;
     // allocate more space for the commit buffer to be on the save side, this needs to be a power of two
     localparam int unsigned DEPTH_COMMIT = 8;
 `endif
-<<<<<<< HEAD
+
     localparam bit ACC_PRESENT=1'b1; // Use this bit to specify if RoCC interface is used
-=======
->>>>>>> upstream/master
+
 
 `ifdef PITON_ARIANE
     // Floating-point extensions configuration

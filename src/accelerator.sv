@@ -1,4 +1,4 @@
-module accelerator (
+module accelerator import ariane_pkg::*; (
     input  rocc_cmd_t  rocc_cmd_i,
     input  logic       rocc_cmd_valid_i,
     output logic       rocc_cmd_ready_o,

@@ -1,4 +1,4 @@
-module rocc (
+module rocc import ariane_pkg::*; (
     input  logic                     clk_i,
     input  logic                     rst_ni,
     input  logic                     flush_i,

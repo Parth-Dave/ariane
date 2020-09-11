@@ -14,13 +14,10 @@
 // Description: Instantiation of all functional units residing in the execute stage
 
 
-<<<<<<< HEAD
 
-module ex_stage #(
-=======
 module ex_stage import ariane_pkg::*; #(
     parameter int unsigned ASID_WIDTH = 1,
->>>>>>> upstream/master
+
     parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
     input  logic                                   clk_i,    // Clock
