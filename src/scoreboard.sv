@@ -73,10 +73,10 @@ module scoreboard #(
   } mem_q [NR_ENTRIES-1:0], mem_n [NR_ENTRIES-1:0];
 
 
-  /*logic is_rd_rocc_test_flag ;
+  logic is_rd_rocc_test_flag ;
   logic [31:0] issue_instr_test;
   assign is_rd_rocc_test_flag = ariane_pkg::is_rd_rocc(issue_instr_o.ex.tval[14:12],issue_instr_o.fu);
-  assign issue_instr_test = issue_instr_o.ex.tval[31:0];*/
+  assign issue_instr_test = issue_instr_o.ex.tval[31:0];
 
 
   logic                    issue_full, issue_en;

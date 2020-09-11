@@ -206,7 +206,6 @@ module issue_read_operands import ariane_pkg::*; #(
         end
        
     end
-    /*
     logic is_rs1_rocc_issue;
     logic is_rd_rocc_issue;
     logic is_rs2_rocc_issue;
@@ -214,7 +213,6 @@ module issue_read_operands import ariane_pkg::*; #(
     assign is_rs1_rocc_issue = is_rs1_rocc(orig_instr.rtype.funct3,issue_instr_i.fu);
     assign is_rs2_rocc_issue = is_rs2_rocc(orig_instr.rtype.funct3,issue_instr_i.fu);
     assign is_rd_rocc_issue = is_rd_rocc(orig_instr.rtype.funct3,issue_instr_i.fu);
-    */
     // Forwarding/Output MUX
     always_comb begin : forwarding_operand_select
         // default is regfiles (gpr or fpr)
