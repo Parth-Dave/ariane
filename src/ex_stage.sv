@@ -13,10 +13,14 @@
 // Date: 19.04.2017
 // Description: Instantiation of all functional units residing in the execute stage
 
-import ariane_pkg::*;
 
+<<<<<<< HEAD
 
 module ex_stage #(
+=======
+module ex_stage import ariane_pkg::*; #(
+    parameter int unsigned ASID_WIDTH = 1,
+>>>>>>> upstream/master
     parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
     input  logic                                   clk_i,    // Clock
@@ -24,12 +28,14 @@ module ex_stage #(
     input  logic                                   flush_i,
     input  logic                                   debug_mode_i,
 
+    input  logic [riscv::VLEN-1:0]                 rs1_forwarding_i,
+    input  logic [riscv::VLEN-1:0]                 rs2_forwarding_i,
     input  fu_data_t                               fu_data_i,
     input  logic [riscv::VLEN-1:0]                 pc_i,                  // PC of current instruction
     input  logic                                   is_compressed_instr_i, // we need to know if this was a compressed instruction
                                                                           // in order to calculate the next PC on a mis-predict
     // Fixed latency unit(s)
-    output logic [63:0]                            flu_result_o,
+    output riscv::xlen_t                           flu_result_o,
     output logic [TRANS_ID_BITS-1:0]               flu_trans_id_o,        // ID of scoreboard entry at which to write back
     output exception_t                             flu_exception_o,
     output logic                                   flu_ready_o,           // FLU is ready
@@ -53,11 +59,11 @@ module ex_stage #(
     input  logic                                   lsu_valid_i,        // Input is valid
 
     output logic                                   load_valid_o,
-    output logic [63:0]                            load_result_o,
+    output riscv::xlen_t                           load_result_o,
     output logic [TRANS_ID_BITS-1:0]               load_trans_id_o,
     output exception_t                             load_exception_o,
     output logic                                   store_valid_o,
-    output logic [63:0]                            store_result_o,
+    output riscv::xlen_t                           store_result_o,
     output logic [TRANS_ID_BITS-1:0]               store_trans_id_o,
     output exception_t                             store_exception_o,
 
@@ -74,7 +80,7 @@ module ex_stage #(
     input  logic [2:0]                             fpu_frm_i,        // FP frm csr
     input  logic [6:0]                             fpu_prec_i,       // FP precision control
     output logic [TRANS_ID_BITS-1:0]               fpu_trans_id_o,
-    output logic [63:0]                            fpu_result_o,
+    output riscv::xlen_t                           fpu_result_o,
     output logic                                   fpu_valid_o,
     output exception_t                             fpu_exception_o,
 
@@ -102,7 +108,7 @@ module ex_stage #(
     input  riscv::priv_lvl_t                       ld_st_priv_lvl_i,
     input  logic                                   sum_i,
     input  logic                                   mxr_i,
-    input  logic [43:0]                            satp_ppn_i,
+    input  logic [riscv::PPNW-1:0]                 satp_ppn_i,
     input  logic [ASID_WIDTH-1:0]                  asid_i,
     // icache translation requests
     input  icache_areq_o_t                         icache_areq_i,
@@ -112,14 +118,15 @@ module ex_stage #(
     input  dcache_req_o_t [2:0]                    dcache_req_ports_i,
     output dcache_req_i_t [2:0]                    dcache_req_ports_o,
     input  logic                                   dcache_wbuffer_empty_i,
+    input  logic                                   dcache_wbuffer_not_ni_i,
     output amo_req_t                               amo_req_o,          // request to cache subsytem
     input  amo_resp_t                              amo_resp_i,         // response from cache subsystem
     // Performance counters
     output logic                                   itlb_miss_o,
     output logic                                   dtlb_miss_o,
     // PMPs
-    input  riscv::pmpcfg_t [ArianeCfg.NrPMPEntries-1:0]  pmpcfg_i,
-    input  logic[ArianeCfg.NrPMPEntries-1:0][53:0]       pmpaddr_i
+    input  riscv::pmpcfg_t [15:0]                  pmpcfg_i,
+    input  logic[15:0][53:0]                       pmpaddr_i
 );
 
     // -------------------------
@@ -142,9 +149,16 @@ module ex_stage #(
     //                        they will simply block the issue of all other
     //                        instructions.
 
+
+    logic current_instruction_is_sfence_vma;
+    // These two register store the rs1 and rs2 parameters in case of `SFENCE_VMA`
+    // instruction to be used for TLB flush in the next clock cycle.
+    logic [ASID_WIDTH-1:0] asid_to_be_flushed;
+    logic [riscv::VLEN-1:0] vaddr_to_be_flushed;
+
     // from ALU to branch unit
     logic alu_branch_res; // branch comparison result
-    logic [63:0] alu_result, csr_result, mult_result;
+    riscv::xlen_t alu_result, csr_result, mult_result;
     logic [riscv::VLEN-1:0] branch_result;
     logic csr_ready, mult_ready;
     logic [TRANS_ID_BITS-1:0] mult_trans_id;
@@ -202,7 +216,7 @@ module ex_stage #(
     // result MUX
     always_comb begin
         // Branch result as default case
-        flu_result_o = {{64-riscv::VLEN{1'b0}}, branch_result};
+        flu_result_o = {{riscv::XLEN-riscv::VLEN{1'b0}}, branch_result};
         flu_trans_id_o = fu_data_i.trans_id;
         // ALU result
         if (alu_valid_i) begin
@@ -308,7 +322,8 @@ module ex_stage #(
     assign lsu_data  = lsu_valid_i ? fu_data_i  : '0;
 
     load_store_unit #(
-      .ArianeCfg ( ArianeCfg )
+        .ASID_WIDTH ( ASID_WIDTH ),
+        .ArianeCfg ( ArianeCfg )
     ) lsu_i (
         .clk_i,
         .rst_ni,
@@ -338,17 +353,45 @@ module ex_stage #(
         .mxr_i,
         .satp_ppn_i,
         .asid_i,
+        .asid_to_be_flushed_i (asid_to_be_flushed),
+        .vaddr_to_be_flushed_i (vaddr_to_be_flushed),
         .flush_tlb_i,
         .itlb_miss_o,
         .dtlb_miss_o,
         .dcache_req_ports_i,
         .dcache_req_ports_o,
         .dcache_wbuffer_empty_i,
+        .dcache_wbuffer_not_ni_i,
         .amo_valid_commit_i,
         .amo_req_o,
         .amo_resp_i,
         .pmpcfg_i,
         .pmpaddr_i
     );
+
+
+	always_ff @(posedge clk_i or negedge rst_ni) begin
+	    if (~rst_ni) begin
+          current_instruction_is_sfence_vma <= 1'b0;
+		  end else begin
+          if (flush_i) begin
+              current_instruction_is_sfence_vma <= 1'b0;
+          end else if ((fu_data_i.operator == SFENCE_VMA) && csr_valid_i) begin
+              current_instruction_is_sfence_vma <= 1'b1;
+          end
+      end
+  end
+
+  // This process stores the rs1 and rs2 parameters of a SFENCE_VMA instruction.
+	always_ff @(posedge clk_i or negedge rst_ni) begin
+		if (~rst_ni) begin
+		    asid_to_be_flushed  <= '0;
+			  vaddr_to_be_flushed <=  '0;
+    // if the current instruction in EX_STAGE is a sfence.vma, in the next cycle no writes will happen
+		end else if ((~current_instruction_is_sfence_vma) && (~((fu_data_i.operator == SFENCE_VMA) && csr_valid_i))) begin
+			  vaddr_to_be_flushed <=  rs1_forwarding_i;
+			  asid_to_be_flushed  <= rs2_forwarding_i[ASID_WIDTH-1:0];
+		end
+	end
 
 endmodule

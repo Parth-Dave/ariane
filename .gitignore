@@ -31,6 +31,10 @@ stdout/
 work-dpi/
 tb/riscv-isa-sim/
 work-*/*
+<<<<<<< HEAD
 hello.c
 hello.elf
 test.elf
+=======
+install/
+>>>>>>> upstream/master

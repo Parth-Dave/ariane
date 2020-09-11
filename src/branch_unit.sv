@@ -65,7 +65,7 @@ module branch_unit (
             resolved_branch_o.target_address = (branch_comp_res_i) ? target_address : next_pc;
             resolved_branch_o.is_taken = branch_comp_res_i;
             // check the outcome of the branch speculation
-            if (ariane_pkg::is_branch(fu_data_i.operator) && branch_comp_res_i != (branch_predict_i.cf == ariane_pkg::Branch)) begin
+            if (ariane_pkg::op_is_branch(fu_data_i.operator) && branch_comp_res_i != (branch_predict_i.cf == ariane_pkg::Branch)) begin
                 // we mis-predicted the outcome
                 // if the outcome doesn't match we've got a mis-predict
                 resolved_branch_o.is_mispredict  = 1'b1;
@@ -87,7 +87,7 @@ module branch_unit (
     always_comb begin : exception_handling
         branch_exception_o.cause = riscv::INSTR_ADDR_MISALIGNED;
         branch_exception_o.valid = 1'b0;
-        branch_exception_o.tval  = {{64-riscv::VLEN{pc_i[riscv::VLEN-1]}}, pc_i};
+        branch_exception_o.tval  = {{riscv::XLEN-riscv::VLEN{pc_i[riscv::VLEN-1]}}, pc_i};
         // only throw exception if this is indeed a branch
         if (branch_valid_i && target_address[0] != 1'b0) branch_exception_o.valid = 1'b1;
     end

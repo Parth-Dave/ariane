@@ -22,10 +22,13 @@ import "DPI-C" function void dromajo_step(int     hart_id,
 import "DPI-C" function void init_dromajo(string cfg_f_name);
 `endif
 
-import ariane_pkg::*;
 
+<<<<<<< HEAD
 
 module ariane #(
+=======
+module ariane import ariane_pkg::*; #(
+>>>>>>> upstream/master
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig
 ) (
   input  logic                         clk_i,
@@ -97,6 +100,9 @@ module ariane #(
   // --------------
   // ISSUE <-> EX
   // --------------
+   logic [63:0] rs1_forwarding_id_ex; // unregistered version of fu_data_o.operanda
+   logic [63:0] rs2_forwarding_id_ex; // unregistered version of fu_data_o.operandb
+
   fu_data_t                 fu_data_id_ex;
   logic [riscv::VLEN-1:0]   pc_id_ex;
   logic                     is_compressed_instr_id_ex;
@@ -104,7 +110,7 @@ module ariane #(
   logic                     flu_ready_ex_id;
   logic [TRANS_ID_BITS-1:0] flu_trans_id_ex_id;
   logic                     flu_valid_ex_id;
-  logic [63:0]              flu_result_ex_id;
+  riscv::xlen_t             flu_result_ex_id;
   exception_t               flu_exception_ex_id;
   // ALU
   logic                     alu_valid_id_ex;
@@ -118,11 +124,11 @@ module ariane #(
   logic                     lsu_ready_ex_id;
 
   logic [TRANS_ID_BITS-1:0] load_trans_id_ex_id;
-  logic [63:0]              load_result_ex_id;
+  riscv::xlen_t             load_result_ex_id;
   logic                     load_valid_ex_id;
   exception_t               load_exception_ex_id;
 
-  logic [63:0]              store_result_ex_id;
+  riscv::xlen_t             store_result_ex_id;
   logic [TRANS_ID_BITS-1:0] store_trans_id_ex_id;
   logic                     store_valid_ex_id;
   exception_t               store_exception_ex_id;
@@ -134,7 +140,7 @@ module ariane #(
   logic [1:0]               fpu_fmt_id_ex;
   logic [2:0]               fpu_rm_id_ex;
   logic [TRANS_ID_BITS-1:0] fpu_trans_id_ex_id;
-  logic [63:0]              fpu_result_ex_id;
+  riscv::xlen_t             fpu_result_ex_id;
   logic                     fpu_valid_ex_id;
   exception_t               fpu_exception_ex_id;
 
@@ -175,7 +181,7 @@ module ariane #(
   // COMMIT <-> ID
   // --------------
   logic [NR_COMMIT_PORTS-1:0][4:0]  waddr_commit_id;
-  logic [NR_COMMIT_PORTS-1:0][63:0] wdata_commit_id;
+  logic [NR_COMMIT_PORTS-1:0][riscv::XLEN-1:0] wdata_commit_id;
   logic [NR_COMMIT_PORTS-1:0]       we_gpr_commit_id;
   logic [NR_COMMIT_PORTS-1:0]       we_fpr_commit_id;
   // --------------
@@ -190,12 +196,12 @@ module ariane #(
   riscv::priv_lvl_t         ld_st_priv_lvl_csr_ex;
   logic                     sum_csr_ex;
   logic                     mxr_csr_ex;
-  logic [43:0]              satp_ppn_csr_ex;
-  logic [0:0]               asid_csr_ex;
+  logic [riscv::PPNW-1:0]   satp_ppn_csr_ex;
+  logic [ASID_WIDTH-1:0]    asid_csr_ex;
   logic [11:0]              csr_addr_ex_csr;
   fu_op                     csr_op_commit_csr;
-  logic [63:0]              csr_wdata_commit_csr;
-  logic [63:0]              csr_rdata_csr_commit;
+  riscv::xlen_t             csr_wdata_commit_csr;
+  riscv::xlen_t             csr_rdata_csr_commit;
   exception_t               csr_exception_csr_commit;
   logic                     tvm_csr_id;
   logic                     tw_csr_id;
@@ -206,13 +212,13 @@ module ariane #(
   logic                     icache_en_csr;
   logic                     debug_mode;
   logic                     single_step_csr_commit;
-  riscv::pmpcfg_t [ArianeCfg.NrPMPEntries-1:0] pmpcfg;
-  logic [ArianeCfg.NrPMPEntries-1:0][53:0]     pmpaddr;
+  riscv::pmpcfg_t [15:0]    pmpcfg;
+  logic [15:0][53:0]        pmpaddr;
   // ----------------------------
   // Performance Counters <-> *
   // ----------------------------
   logic [4:0]               addr_csr_perf;
-  logic [63:0]              data_csr_perf, data_perf_csr;
+  riscv::xlen_t             data_csr_perf, data_perf_csr;
   logic                     we_csr_perf;
 
   logic                     icache_flush_ctrl_cache;
@@ -256,6 +262,7 @@ module ariane #(
   dcache_req_i_t [2:0]      dcache_req_ports_ex_cache;
   dcache_req_o_t [2:0]      dcache_req_ports_cache_ex;
   logic                     dcache_commit_wbuffer_empty;
+  logic                     dcache_commit_wbuffer_not_ni;
 
   // --------------
   // Frontend
@@ -266,7 +273,7 @@ module ariane #(
     .flush_i             ( flush_ctrl_if                 ), // not entirely correct
     .flush_bp_i          ( 1'b0                          ),
     .debug_mode_i        ( debug_mode                    ),
-    .boot_addr_i         ( boot_addr_i                   ),
+    .boot_addr_i         ( boot_addr_i[riscv::XLEN-1:0]  ),
     .icache_dreq_i       ( icache_dreq_cache_if          ),
     .icache_dreq_o       ( icache_dreq_if_cache          ),
     .resolved_branch_i   ( resolved_branch               ),
@@ -331,6 +338,8 @@ module ariane #(
     .is_ctrl_flow_i             ( is_ctrl_fow_id_issue         ),
     .decoded_instr_ack_o        ( issue_instr_issue_id         ),
     // Functional Units
+    .rs1_forwarding_o           ( rs1_forwarding_id_ex         ),
+    .rs2_forwarding_o           ( rs2_forwarding_id_ex         ),
     .fu_data_o                  ( fu_data_id_ex                ),
     .pc_o                       ( pc_id_ex                     ),
     .is_compressed_instr_o      ( is_compressed_instr_id_ex    ),
@@ -378,12 +387,15 @@ module ariane #(
   // EX
   // ---------
   ex_stage #(
-    .ArianeCfg ( ArianeCfg )
+    .ASID_WIDTH ( ASID_WIDTH ),
+    .ArianeCfg  ( ArianeCfg  )
   ) ex_stage_i (
     .clk_i                  ( clk_i                       ),
     .rst_ni                 ( rst_ni                      ),
     .debug_mode_i           ( debug_mode                  ),
     .flush_i                ( flush_ctrl_ex               ),
+    .rs1_forwarding_i       ( rs1_forwarding_id_ex        ),
+    .rs2_forwarding_i       ( rs2_forwarding_id_ex        ),
     .fu_data_i              ( fu_data_id_ex               ),
     .pc_i                   ( pc_id_ex                    ),
     .is_compressed_instr_i  ( is_compressed_instr_id_ex   ),
@@ -472,6 +484,7 @@ module ariane #(
     .dcache_req_ports_i     ( dcache_req_ports_cache_ex   ),
     .dcache_req_ports_o     ( dcache_req_ports_ex_cache   ),
     .dcache_wbuffer_empty_i ( dcache_commit_wbuffer_empty ),
+    .dcache_wbuffer_not_ni_i ( dcache_commit_wbuffer_not_ni ),
     // PMP
     .pmpcfg_i               ( pmpcfg                      ),
     .pmpaddr_i              ( pmpaddr                     )
@@ -533,7 +546,8 @@ module ariane #(
     .halt_csr_o             ( halt_csr_ctrl                 ),
     .commit_instr_i         ( commit_instr_id_commit        ),
     .commit_ack_i           ( commit_ack                    ),
-    .boot_addr_i            ( boot_addr_i                   ),
+    .boot_addr_i            ( boot_addr_i[riscv::XLEN-1:0]  ),
+    .hart_id_i              ( hart_id_i[riscv::XLEN-1:0]    ),
     .ex_i                   ( ex_commit                     ),
     .csr_op_i               ( csr_op_commit_csr             ),
     .csr_write_fflags_i     ( csr_write_fflags_commit_cs    ),
@@ -669,6 +683,7 @@ module ariane #(
     .dcache_req_ports_o    ( dcache_req_ports_cache_ex   ),
     // write buffer status
     .wbuffer_empty_o       ( dcache_commit_wbuffer_empty ),
+    .wbuffer_not_ni_o      ( dcache_commit_wbuffer_not_ni ),
 `ifdef PITON_ARIANE
     .l15_req_o             ( l15_req_o                   ),
     .l15_rtrn_i            ( l15_rtrn_i                  )
@@ -715,6 +730,7 @@ module ariane #(
     .axi_req_o             ( axi_req_o                   ),
     .axi_resp_i            ( axi_resp_i                  )
   );
+  assign dcache_commit_wbuffer_not_ni = 1'b1;
 `endif
 
   // -------------------

@@ -14,9 +14,8 @@
 // Description: Hardware-PTW
 
 /* verilator lint_off WIDTH */
-import ariane_pkg::*;
 
-module ptw #(
+module ptw import ariane_pkg::*; #(
         parameter int ASID_WIDTH = 1,
         parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
@@ -55,15 +54,16 @@ module ptw #(
     input  logic                    dtlb_hit_i,
     input  logic [riscv::VLEN-1:0]  dtlb_vaddr_i,
     // from CSR file
-    input  logic [43:0]             satp_ppn_i, // ppn from satp
+    input  logic [riscv::PPNW-1:0]  satp_ppn_i, // ppn from satp
     input  logic                    mxr_i,
     // Performance counters
     output logic                    itlb_miss_o,
     output logic                    dtlb_miss_o,
     // PMP
-    input  riscv::pmpcfg_t [ArianeCfg.NrPMPEntries-1:0]  pmpcfg_i,
-    input  logic [ArianeCfg.NrPMPEntries-1:0][53:0]      pmpaddr_i,
-    output logic [63:0]             bad_paddr_o
+
+    input  riscv::pmpcfg_t [15:0]   pmpcfg_i,
+    input  logic [15:0][53:0]       pmpaddr_i,
+    output logic [riscv::PLEN-1:0]  bad_paddr_o
 
 );
 
@@ -98,7 +98,7 @@ module ptw #(
     // register the VPN we need to walk, SV39 defines a 39 bit virtual address
     logic [riscv::VLEN-1:0] vaddr_q,   vaddr_n;
     // 4 byte aligned physical pointer
-    logic[55:0] ptw_pptr_q, ptw_pptr_n;
+    logic [riscv::PLEN-1:0] ptw_pptr_q, ptw_pptr_n;
 
     // Assignments
     assign update_vaddr_o  = vaddr_q;
@@ -115,8 +115,8 @@ module ptw #(
     // -----------
     // TLB Update
     // -----------
-    assign itlb_update_o.vpn = vaddr_q[38:12];
-    assign dtlb_update_o.vpn = vaddr_q[38:12];
+    assign itlb_update_o.vpn = {{39-riscv::SV{1'b0}}, vaddr_q[riscv::SV-1:12]};
+    assign dtlb_update_o.vpn = {{39-riscv::SV{1'b0}}, vaddr_q[riscv::SV-1:12]};
     // update the correct page table level
     assign itlb_update_o.is_2M = (ptw_lvl_q == LVL2);
     assign itlb_update_o.is_1G = (ptw_lvl_q == LVL1);
@@ -133,22 +133,22 @@ module ptw #(
 
     logic allow_access;
 
-    assign bad_paddr_o = ptw_access_exception_o ? {8'b0, ptw_pptr_q} : 64'b0;
+    assign bad_paddr_o = ptw_access_exception_o ? ptw_pptr_q : 'b0;
 
     pmp #(
-        .XLEN       ( 64                     ),
-        .PMP_LEN    ( 54                     ),
+        .PLEN       ( riscv::PLEN            ),
+        .PMP_LEN    ( riscv::PLEN - 2        ),
         .NR_ENTRIES ( ArianeCfg.NrPMPEntries )
     ) i_pmp_ptw (
-        .addr_i        ( {8'b0, ptw_pptr_q}        ),
+        .addr_i        ( ptw_pptr_q         ),
         // PTW access are always checked as if in S-Mode...
-        .priv_lvl_i    ( riscv::PRIV_LVL_S         ),
+        .priv_lvl_i    ( riscv::PRIV_LVL_S  ),
         // ...and they are always loads
-        .access_type_i ( riscv::ACCESS_READ        ),
+        .access_type_i ( riscv::ACCESS_READ ),
         // Configuration
-        .conf_addr_i   ( pmpaddr_i                 ),
-        .conf_i        ( pmpcfg_i                  ),
-        .allow_o       ( allow_access              )
+        .conf_addr_i   ( pmpaddr_i          ),
+        .conf_i        ( pmpcfg_i           ),
+        .allow_o       ( allow_access       )
     );
 
     //-------------------
@@ -207,7 +207,7 @@ module ptw #(
                 is_instr_ptw_n   = 1'b0;
                 // if we got an ITLB miss
                 if (enable_translation_i & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) begin
-                    ptw_pptr_n          = {satp_ppn_i, itlb_vaddr_i[38:30], 3'b0};
+                    ptw_pptr_n          = {satp_ppn_i, itlb_vaddr_i[riscv::SV-1:30], 3'b0};
                     is_instr_ptw_n      = 1'b1;
                     tlb_update_asid_n   = asid_i;
                     vaddr_n             = itlb_vaddr_i;
@@ -215,7 +215,7 @@ module ptw #(
                     itlb_miss_o         = 1'b1;
                 // we got an DTLB miss
                 end else if (en_ld_st_translation_i & dtlb_access_i & ~dtlb_hit_i) begin
-                    ptw_pptr_n          = {satp_ppn_i, dtlb_vaddr_i[38:30], 3'b0};
+                    ptw_pptr_n          = {satp_ppn_i, dtlb_vaddr_i[riscv::SV-1:30], 3'b0};
                     tlb_update_asid_n   = asid_i;
                     vaddr_n             = dtlb_vaddr_i;
                     state_d             = WAIT_GRANT;

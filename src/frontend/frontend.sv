@@ -14,9 +14,8 @@
 //
 // This module interfaces with the instruction cache, handles control
 // change request from the back-end and does branch prediction.
-import ariane_pkg::*;
 
-module frontend #(
+module frontend import ariane_pkg::*; #(
   parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
   input  logic               clk_i,              // Clock
@@ -419,6 +418,7 @@ module frontend #(
       .instr_i             ( instr                ), // from re-aligner
       .addr_i              ( addr                 ), // from re-aligner
       .exception_i         ( icache_ex_valid_q    ), // from I$
+      .exception_addr_i    ( icache_vaddr_q       ),
       .predict_address_i   ( predict_address      ),
       .cf_type_i           ( cf_type              ),
       .valid_i             ( instruction_valid    ), // from re-aligner
